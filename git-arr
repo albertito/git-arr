@@ -1,0 +1,390 @@
+#!/usr/bin/env python
+"""
+git-arr: A git web html generator.
+"""
+
+from __future__ import print_function
+
+import os
+import math
+import optparse
+
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+
+import bottle
+
+import git
+import utils
+
+
+# The list of repositories is a global variable for convenience. It will be
+# populated by load_config().
+repos = {}
+
+
+def load_config(path):
+    """Load the configuration from the given file.
+
+    The "repos" global variable will be filled with the repositories
+    as configured.
+    """
+    defaults = {
+        'tree': 'yes',
+        'desc': '',
+        'recursive': 'no',
+        'commits_in_summary': '10',
+        'commits_per_page': '50',
+        'max_pages': '5',
+        'web_url': '',
+        'web_url_file': 'web_url',
+        'git_url': '',
+        'git_url_file': 'git_url',
+    }
+
+    config = configparser.SafeConfigParser(defaults)
+    config.read(path)
+
+    # Do a first pass for general sanity checking and recursive expansion.
+    for s in config.sections():
+        if not config.has_option(s, 'path'):
+            raise configparser.NoOptionError(
+                    '%s is missing the mandatory path' % s)
+
+        if config.getboolean(s, 'recursive'):
+            for path in os.listdir(config.get(s, 'path')):
+                fullpath = config.get(s, 'path') + '/' + path
+                if not os.path.exists(fullpath + '/HEAD'):
+                    continue
+
+                if os.path.exists(fullpath + '/disable_gitweb'):
+                    continue
+
+                if config.has_section(path):
+                    continue
+
+                config.add_section(path)
+                for opt, value in config.items(s, raw = True):
+                    config.set(path, opt, value)
+
+                config.set(path, 'path', fullpath)
+                config.set(path, 'recursive', 'no')
+
+            # This recursive section is no longer useful.
+            config.remove_section(s)
+
+    for s in config.sections():
+        fullpath = config.get(s, 'path')
+        config.set(s, 'name', s)
+
+        desc = config.get(s, 'desc')
+        if not desc and os.path.exists(fullpath + '/description'):
+            desc = open(fullpath + '/description').read().strip()
+
+        r = git.Repo(fullpath, name = s)
+        r.info.desc = desc
+        r.info.commits_in_summary = config.getint(s, 'commits_in_summary')
+        r.info.commits_per_page = config.getint(s, 'commits_per_page')
+        r.info.max_pages = config.getint(s, 'max_pages')
+        r.info.generate_tree = config.getboolean(s, 'tree')
+
+        r.info.web_url = config.get(s, 'web_url')
+        web_url_file = fullpath + '/' + config.get(s, 'web_url_file')
+        if not r.info.web_url and os.path.isfile(web_url_file):
+            r.info.web_url = open(web_url_file).read()
+
+        r.info.git_url = config.get(s, 'git_url')
+        git_url_file = fullpath + '/' + config.get(s, 'git_url_file')
+        if not r.info.git_url and os.path.isfile(git_url_file):
+            r.info.git_url = open(git_url_file).read()
+
+        repos[r.name] = r
+
+
+def repo_filter(unused_conf):
+    """Bottle route filter for repos."""
+    # TODO: consider allowing /, which is tricky.
+    regexp = r'[\w\.~-]+'
+
+    def to_python(s):
+        """Return the corresponding Python object."""
+        if s in repos:
+            return repos[s]
+        bottle.abort(404, "Unknown repository")
+
+    def to_url(r):
+        """Return the corresponding URL string."""
+        return r.name
+
+    return regexp, to_python, to_url
+
+app = bottle.Bottle()
+app.router.add_filter('repo', repo_filter)
+bottle.app.push(app)
+
+
+def with_utils(f):
+    """Decorator to add the utilities to the return value.
+    
+    Used to wrap functions that return dictionaries which are then passed to
+    templates.
+    """
+    utilities = {
+        'shorten': utils.shorten,
+        'has_colorizer': utils.has_colorizer,
+        'colorize_diff': utils.colorize_diff,
+        'colorize_blob': utils.colorize_blob,
+        'abort': bottle.abort,
+        'smstr': git.smstr,
+    }
+
+    def wrapped(*args, **kwargs):
+        """Wrapped function we will return."""
+        d = f(*args, **kwargs)
+        d.update(utilities)
+        return d
+
+    wrapped.__name__ = f.__name__
+    wrapped.__doc__ = f.__doc__
+
+    return wrapped
+
+@bottle.route('/')
+@bottle.view('index')
+@with_utils
+def index():
+    return dict(repos = repos)
+
+@bottle.route('/r/<repo:repo>/')
+@bottle.view('summary')
+@with_utils
+def summary(repo):
+    return dict(repo = repo)
+
+@bottle.route('/r/<repo:repo>/b/<bname>/')
+@bottle.route('/r/<repo:repo>/b/<bname>/<offset:int>.html')
+@bottle.view('branch')
+@with_utils
+def branch(repo, bname, offset = 0):
+    return dict(repo = repo.new_in_branch(bname), offset = offset)
+
+@bottle.route('/r/<repo:repo>/c/<cid:re:[0-9a-z]{5,40}>/')
+@bottle.view('commit')
+@with_utils
+def commit(repo, cid):
+    c = repo.commit(cid)
+    if not c:
+        bottle.abort(404, 'Commit not found')
+
+    return dict(repo = repo, c=c)
+
+@bottle.route('/r/<repo:repo>/b/<bname>/t/')
+@bottle.route('/r/<repo:repo>/b/<bname>/t/<dirname:path>/')
+@bottle.view('tree')
+@with_utils
+def tree(repo, bname, dirname = ''):
+    if dirname and not dirname.endswith('/'):
+        dirname = dirname + '/'
+
+    dirname = git.smstr.from_url(dirname)
+
+    r = repo.new_in_branch(bname)
+    return dict(repo = r, tree = r.tree(), dirname = dirname)
+
+@bottle.route('/r/<repo:repo>/b/<bname>/t/f=<fname:path>.html')
+@bottle.route('/r/<repo:repo>/b/<bname>/t/<dirname:path>/f=<fname:path>.html')
+@bottle.view('blob')
+@with_utils
+def blob(repo, bname, fname, dirname = ''):
+    r = repo.new_in_branch(bname)
+
+    if dirname and not dirname.endswith('/'):
+        dirname = dirname + '/'
+
+    dirname = git.smstr.from_url(dirname)
+    fname = git.smstr.from_url(fname)
+    path = dirname.raw + fname.raw
+
+    content = r.blob(path)
+    if content is None:
+        bottle.abort(404, "File %r not found in branch %s" % (path, bname))
+
+    return dict(repo = r, dirname = dirname, fname = fname, blob = content)
+
+@bottle.route('/static/<path:path>')
+def static(path):
+    return bottle.static_file(path, root = './static/')
+
+
+#
+# Static HTML generation
+#
+
+def generate(output):
+    """Generate static html to the output directory."""
+    def write_to(path, func_or_str, args = (), mtime = None):
+        path = output + '/' + path
+        dirname = os.path.dirname(path)
+
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
+        if mtime:
+            path_mtime = 0
+            if os.path.exists(path):
+                path_mtime = os.stat(path).st_mtime
+
+            # Make sure they're both float or int, to avoid failing
+            # comparisons later on because of this.
+            if isinstance(path_mtime, int):
+                mtime = int(mtime)
+
+            # If we were given mtime, we compare against it to see if we
+            # should write the file or not. Compare with almost-equality
+            # because otherwise floating point equality gets in the way, and
+            # we rather write a bit more, than generate the wrong output.
+            if abs(path_mtime - mtime) < 0.000001:
+                return
+            print(path)
+            s = func_or_str(*args)
+        else:
+            # Otherwise, be lazy if we were given a function to run, or write
+            # always if they gave us a string.
+            if isinstance(func_or_str, (str, unicode)):
+                print(path)
+                s = func_or_str
+            else:
+                if os.path.exists(path):
+                    return
+                print(path)
+                s = func_or_str(*args)
+
+        open(path, 'w').write(s.encode('utf8', errors = 'xmlcharrefreplace'))
+        if mtime:
+            os.utime(path, (mtime, mtime))
+
+    def link(from_path, to_path):
+        from_path = output + '/' + from_path
+
+        if os.path.lexists(from_path):
+            return
+        print(from_path, '->', to_path)
+        os.symlink(to_path, from_path)
+
+    def write_tree(r, bn, mtime):
+        t = r.tree(bn)
+
+        write_to('r/%s/b/%s/t/index.html' % (r.name, bn),
+                tree, (r, bn), mtime)
+
+        for otype, oname, _ in t.ls('', recursive = True):
+            # FIXME: bottle cannot route paths with '\n' so those are sadly
+            # expected to fail for now; we skip them.
+            if '\n' in oname.raw:
+                print('skipping file with \\n: %r' % (oname.raw))
+                continue
+
+            if otype == 'blob':
+                dirname = git.smstr(os.path.dirname(oname.raw))
+                fname = git.smstr(os.path.basename(oname.raw))
+                write_to(
+                    'r/%s/b/%s/t/%s/f=%s.html' %
+                        (str(r.name), str(bn), dirname.raw, fname.raw),
+                    blob, (r, bn, fname.url, dirname.url), mtime)
+            else:
+                write_to('r/%s/b/%s/t/%s/index.html' %
+                            (str(r.name), str(bn), oname.raw),
+                        tree, (r, bn, oname.url), mtime)
+
+    write_to('index.html', index())
+
+    # We can't call static() because it relies on HTTP headers.
+    read_f = lambda f: open(f).read()
+    write_to('static/git-arr.css', read_f, ['static/git-arr.css'],
+            os.stat('static/git-arr.css').st_mtime)
+    write_to('static/syntax.css', read_f, ['static/syntax.css'],
+            os.stat('static/syntax.css').st_mtime)
+
+    for r in sorted(repos.values(), key = lambda r: r.name):
+        write_to('r/%s/index.html' % r.name, summary(r))
+        for bn in r.branch_names():
+            commit_count = 0
+            commit_ids = r.commit_ids('refs/heads/' + bn,
+                    limit = r.info.commits_per_page * r.info.max_pages)
+            for cid in commit_ids:
+                write_to('r/%s/c/%s/index.html' % (r.name, cid),
+                        commit, (r, cid))
+                commit_count += 1
+
+            # To avoid regenerating files that have not changed, we will
+            # instruct write_to() to set their mtime to the branch's committer
+            # date, and then compare against it to decide wether or not to
+            # write.
+            branch_mtime = r.commit(bn).committer_date.epoch
+
+            nr_pages = int(math.ceil(
+                            float(commit_count) / r.info.commits_per_page))
+            nr_pages = min(nr_pages, r.info.max_pages)
+
+            for page in range(nr_pages):
+                write_to('r/%s/b/%s/%d.html' % (r.name, bn, page),
+                            branch, (r, bn, page), branch_mtime)
+
+            link(from_path = 'r/%s/b/%s/index.html' % (r.name, bn),
+                    to_path = '0.html')
+
+            if r.info.generate_tree:
+                write_tree(r, bn, branch_mtime)
+
+        for tag_name, obj_id in r.tags():
+            try:
+                write_to('r/%s/c/%s/index.html' % (r.name, obj_id),
+                        commit, (r, obj_id))
+            except bottle.HTTPError as e:
+                # Some repos can have tags pointing to non-commits. This
+                # happens in the Linux Kernel's v2.6.11, which points directly
+                # to a tree. Ignore them.
+                if e.status == 404:
+                    print('404 in tag %s (%s)' % (tag_name, obj_id))
+                else:
+                    raise
+
+
+def main():
+    parser = optparse.OptionParser('usage: %prog [options] serve|generate')
+    parser.add_option('-c', '--config', metavar = 'FILE',
+            help = 'configuration file')
+    parser.add_option('-o', '--output', metavar = 'DIR',
+            help = 'output directory (for generate)')
+    parser.add_option('', '--only', metavar = 'REPO', action = 'append',
+            help = 'generate/serve only this repository')
+    opts, args = parser.parse_args()
+
+    if not opts.config:
+        parser.error('--config is mandatory')
+
+    try:
+        load_config(opts.config)
+    except configparser.NoOptionError as e:
+        print('Error parsing config:', e)
+
+    if not args:
+        parser.error('Must specify an action (serve|generate)')
+
+    if opts.only:
+        global repos
+        repos = [ r for r in repos if r.name in opts.only ]
+
+    if args[0] == 'serve':
+        bottle.run(host = 'localhost', port = 8008, reloader = True)
+    elif args[0] == 'generate':
+        if not opts.output:
+            parser.error('Must specify --output')
+        generate(output = opts.output)
+    else:
+        parser.error('Unknown action %s' % args[0])
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+% if not dirname.raw:
+%     relroot = './'
+% else:
+%     relroot = '../' * (len(dirname.split('/')) - 1)
+% end
+
+<title>git &raquo; {{repo.name}} &raquo;
+    {{repo.branch}} &raquo; {{dirname.unicode}}</title>
+<link rel="stylesheet" type="text/css"
+    href="{{relroot}}../../../../../static/git-arr.css"/>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+</head>
+
+<body class="tree">
+<h1><a href="{{relroot}}../../../../../">git</a> &raquo;
+    <a href="{{relroot}}../../../">{{repo.name}}</a> &raquo;
+    <a href="{{relroot}}../">{{repo.branch}}</a> &raquo;
+    <a href="{{relroot}}">tree</a>
+</h1>
+
+<h3>
+    <a href="{{relroot}}">[{{repo.branch}}]</a> /
+% base = smstr(relroot)
+% for c in dirname.split('/'):
+%   if not c.raw: continue
+    <a href="{{base.url}}{{c.url}}/">{{c.unicode}}</a> /
+%   base += c + '/'
+% end
+</h3>
+
+<table class="nice ls">
+% key_func = lambda (t, n, s): (0 if t == 'tree' else 1, n.raw)
+% for type, name, size in sorted(tree.ls(dirname.raw), key = key_func):
+    <tr class="{{type}}">
+%   if type == "blob":
+        <td class="name"><a href="./f={{name.url}}.html">
+            {{!name.html}}</a></td>
+        <td class="size">{{size}}</td>
+%   elif type == "tree":
+        <td class="name">
+            <a class="explicit" href="./{{name.url}}/">
+                {{!name.html}}/</a></td>
+%   end
+    </tr>
+% end
+</table>
+
+</body>
+</html>

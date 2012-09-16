@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>git &raquo; {{repo.name}} &raquo; {{repo.branch}}</title>
+<link rel="stylesheet" type="text/css" href="../../../../static/git-arr.css"/>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+</head>
+
+<body class="branch">
+<h1><a href="../../../../">git</a> &raquo;
+    <a href="../../">{{repo.name}}</a> &raquo;
+    <a href="./">{{repo.branch}}</a>
+</h1>
+
+<p>
+<a class="explicit" href="t/">Browse current source tree</a>
+</p>
+
+% commits = repo.commits("refs/heads/" + repo.branch,
+%                           limit = repo.info.commits_per_page,
+%                           offset = repo.info.commits_per_page * offset)
+% commits = list(commits)
+
+% if len(commits) == 0:
+%   abort(404, "No more commits")
+% end
+
+
+% include paginate nelem = len(commits), max_per_page = repo.info.commits_per_page, offset = offset
+
+% kwargs = dict(repo=repo, commits=commits,
+%               shorten=shorten, repo_root="../..")
+% include commit-list **kwargs
+
+<p/>
+
+% include paginate nelem = len(commits), max_per_page = repo.info.commits_per_page, offset = offset
+
+</body>
+</html>
+

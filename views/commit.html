@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>git &raquo; {{repo.name}} &raquo; commit {{c.id[:7]}}</title>
+<link rel="stylesheet" type="text/css" href="../../../../static/git-arr.css"/>
+<link rel="stylesheet" type="text/css" href="../../../../static/syntax.css"/>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+</head>
+
+<body class="commit">
+<h1><a href="../../../../">git</a> &raquo;
+    <a href="../../">{{repo.name}}</a> &raquo; commit {{c.id[:7]}}
+</h1>
+
+<h2>{{c.subject}}</h2>
+
+<table class="nice commit-info">
+    <tr><td>author</td>
+        <td><span class="name">{{c.author_name}}</span>
+            <span class="email">&lt;{{c.author_email}}&gt;</span><br/>
+            <span class="date" title="{{c.author_date}}">
+                {{c.author_date.utc}} UTC</span></td></tr>
+    <tr><td>committer</td>
+        <td><span class="name">{{c.author_name}}</span>
+            <span class="email">&lt;{{c.author_email}}&gt;</span><br/>
+            <span class="date" title="{{c.author_date}}">
+                {{c.author_date.utc}} UTC</span></td></tr>
+
+% for p in c.parents:
+    <tr><td>parent</td>
+        <td><a href="../{{p}}/">{{p}}</a></td></tr>
+% end
+</table>
+
+<hr/>
+
+<pre class="commit-message">
+{{c.message.strip()}}
+</pre>
+
+<hr/>
+
+% if c.diff.changes:
+
+<table class="nice changed-files">
+% for added, deleted, fname in c.diff.changes:
+    <tr>
+        <td class="main">{{!fname.html}}</td>
+        <td><span class="lines-added">+{{added}}</span></td>
+        <td><span class="lines-deleted">-{{deleted}}</span></td>
+    </tr>
+% end
+</table>
+
+<hr/>
+
+% if has_colorizer():
+{{!colorize_diff(c.diff.body)}}
+% else:
+<pre class="diff-body">
+{{c.diff.body}}
+</pre>
+% end
+
+<hr/>
+
+% end
+
+</body>
+</html>
+

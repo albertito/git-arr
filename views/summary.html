@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>git &raquo; {{repo.name}}</title>
+<link rel="stylesheet" type="text/css" href="../../static/git-arr.css"/>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+</head>
+
+<body class="summary">
+<h1><a href="../../">git</a> &raquo; <a href="./">{{repo.name}}</a></h1>
+
+<h2>{{repo.info.desc}}</h2>
+
+
+% if repo.info.web_url or repo.info.git_url:
+<table class="nice repo_info">
+
+% if repo.info.web_url:
+    <tr>
+        <td class="category">website</td>
+        <td><a class="explicit" href="{{repo.info.web_url}}">
+                {{repo.info.web_url}}</a></td>
+    </tr>
+% end
+% if repo.info.git_url:
+    <tr>
+        <td class="category">repository</td>
+        <td>{{! '<br/>'.join(repo.info.git_url.split())}}</td>
+    </tr>
+% end
+
+</table>
+<hr/>
+% end
+
+% if "master" in repo.branch_names():
+%     kwargs = dict(repo = repo, start_ref = "refs/heads/master",
+%                   limit = repo.info.commits_in_summary,
+%                   shorten = shorten, repo_root = ".", offset = 0)
+%     include commit-list **kwargs
+% end
+
+<hr/>
+
+<table class="nice">
+    <tr>
+        <th>branches</th>
+    </tr>
+
+    % for b in repo.branch_names():
+    <tr>
+        <td class="main"><a href="b/{{b}}/">{{b}}</a></td>
+        <td class="links">
+            <a class="explicit" href="b/{{b}}/">commits</a></td>
+        <td class="links">
+            <a class="explicit" href="b/{{b}}/t/">tree</a></td>
+    </tr>
+    %end
+</table>
+
+<hr/>
+
+% tags = list(repo.tags())
+% if tags:
+<table class="nice">
+    <tr>
+        <th>tags</th>
+    </tr>
+
+    % for name, obj_id in tags:
+    <tr>
+        <td><a href="c/{{obj_id}}/">{{name}}</a></td>
+    </tr>
+    %end
+</table>
+% end
+
+</body>
+</html>
+

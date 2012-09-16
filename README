@@ -1,0 +1,49 @@
+
+git-arr - A git repository browser
+----------------------------------
+
+git-arr is a git repository browser that can generate static HTML instead of
+having to run dynamically.
+
+It is smaller, with less features and a different set of tradeoffs than
+other similar software, so if you're looking for a robust and featureful git
+browser, please look at gitweb or cgit instead.
+
+However, if you want to generate static HTML at the expense of features, then
+it's probably going to be useful.
+
+It's open source under the MIT licence, please see the LICENSE file for more
+information.
+
+
+Getting started
+---------------
+
+First, create a configuration file for your repositories. You can start by
+copying sample.conf, which has the list of the available options.
+
+Then, to generate the output to "/var/www/git-arr/" directory, run:
+
+  $ ./git-arr --config config.conf generate --output /var/www/git-arr/
+
+That's it!
+
+The first time you generate, depending on the size of your repositories, it
+can take some time. Subsequent runs should take less time, as it is smart
+enough to only generate what has changed.
+
+
+You can also use git-arr dynamically, although it's not its intended mode of
+use, by running:
+
+  $ ./git-arr --config config.conf serve
+
+That can be useful when making changes to the software itself.
+
+
+Where to report bugs
+--------------------
+
+If you want to report bugs, or have any questions or comments, just let me
+know at albertito@blitiri.com.ar.
+

@@ -1,0 +1,47 @@
+
+% def refs_to_html(refs):
+%     for ref in refs:
+%         c = ref.split('/', 2)
+%         if len(c) != 3:
+%             return
+%         end
+%         if c[1] == 'heads':
+<span class="refs head">{{c[2]}}</span>
+%         elif c[1] == 'tags':
+%             if c[2].endswith('^{}'):
+%                 c[2] = c[2][:-3]
+%             end
+<span class="refs tag">{{c[2]}}</span>
+%         end
+%     end
+% end
+
+<table class="nice commits">
+
+% refs = repo.refs()
+% if not defined("commits"):
+%     commits = repo.commits(start_ref, limit = limit, offset = offset)
+% end
+
+% for c in commits:
+<tr>
+    <td class="date">
+        <span title="{{c.author_date.str}}">{{c.author_date.utc.date()}}</span>
+    </td>
+    <td class="subject">
+        <a href="{{repo_root}}/c/{{c.id}}/"
+                title="{{c.subject}}">
+            {{shorten(c.subject)}}</a>
+    </td>
+    <td class="author">
+        <span title="{{c.author_name}}">{{shorten(c.author_name, 26)}}</span>
+    </td>
+    % if c.id in refs:
+    <td>
+            % refs_to_html(refs[c.id])
+    </td>
+    % end
+</tr>
+% end
+</table>
+

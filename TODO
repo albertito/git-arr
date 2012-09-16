@@ -1,0 +1,13 @@
+
+In no particular order.
+
+- Atom/RSS.
+- Nicer diff:
+  - Better stat section, with nicer handling of filenames. We should switch to
+    --patch-with-raw and parse from that.
+  - Nicer output, don't use pygments but do our own.
+  - Anchors in diff sections so we can link to them.
+- Short symlinks to commits, with configurable length.
+- Handle symlinks properly.
+- "X hours ago" via javascript (only if it's not too ugly).
+

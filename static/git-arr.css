@@ -1,0 +1,168 @@
+
+/*
+ * git-arr style sheet
+ */
+
+body {
+    font-family: sans-serif;
+    font-size: small;
+    padding: 0 1em 1em 1em;
+}
+
+h1 {
+    font-size: x-large;
+    background: #ddd;
+    padding: 0.3em;
+}
+
+h2, h3 {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.3em;
+    margin-bottom: 0.5em;
+}
+
+hr {
+    border: none;
+    background-color: #e3e3e3;
+    height: 1px;
+}
+
+/* By default, use implied links, more discrete for increased readability. */
+a {
+    text-decoration: none;
+    color: black;
+}
+a:hover {
+    text-decoration: underline;
+    color: #800;
+}
+
+/* Explicit links */
+a.explicit {
+    color: #038;
+}
+a.explicit:hover, a.explicit:active {
+    color: #880000;
+}
+
+
+/* Normal table, for listing things like repositories, branches, etc. */
+table.nice {
+    text-align: left;
+    font-size: small;
+}
+table.nice td {
+    padding: 0.15em 0.5em;
+}
+table.nice td.links {
+    font-size: smaller;
+}
+table.nice td.main {
+    min-width: 10em;
+}
+table.nice tr:hover {
+    background: #eee;
+}
+
+/* Table for commits. */
+table.commits td.date {
+    font-style: italic;
+    color: gray;
+}
+table.commits td.subject {
+    min-width: 32em;
+}
+table.commits td.author {
+    color: gray;
+}
+
+/* Table for commit information. */
+table.commit-info tr:hover {
+    background: inherit;
+}
+table.commit-info td {
+    vertical-align: top;
+}
+table.commit-info span.date, span.email {
+    color: gray;
+}
+
+/* Reference annotations. */
+span.refs {
+    margin: 0px 0.5em;
+    padding: 0px 0.25em;
+    border: solid 1px gray;
+}
+span.head {
+    background-color: #88ff88;
+}
+span.tag {
+    background-color: #ffff88;
+}
+
+/* Commit message and diff. */
+pre.commit-message {
+    font-size: large;
+    padding: 0.2em 2em;
+}
+pre.diff-body {
+    /* Note this is only used as a fallback if pygments is not available. */
+    font-size: medium;
+}
+table.changed-files span.lines-added {
+    color: green;
+}
+table.changed-files span.lines-deleted {
+    color: red;
+}
+
+/* Pagination. */
+div.paginate {
+    padding-bottom: 1em;
+}
+
+div.paginate span.inactive {
+    color: gray;
+}
+
+/* Directory listing. */
+table.ls td.name {
+    min-width: 20em;
+}
+table.ls tr.blob td.size {
+    color: gray;
+}
+
+/* Blob. */
+pre.blob-body {
+    /* Note this is only used as a fallback if pygments is not available. */
+    font-size: medium;
+}
+
+/* Pygments overrides. */
+div.linenodiv {
+    padding-right: 0.5em;
+    color: gray;
+    font-size: medium;
+}
+div.source_code {
+    background: inherit;
+    font-size: medium;
+}
+
+/* Repository information table. */
+table.repo_info tr:hover {
+    background: inherit;
+}
+table.repo_info td.category {
+    font-weight: bold;
+}
+table.repo_info td {
+    vertical-align: top;
+}
+
+span.ctrlchr {
+    color: gray;
+    padding: 0 0.2ex 0 0.1ex;
+    margin:  0 0.2ex 0 0.1ex;
+}

@@ -1,0 +1,15 @@
+
+<div class="paginate">
+% if offset > 0:
+<a href="{{offset - 1}}.html">&larr; prev</a>
+% else:
+<span class="inactive">&larr; prev</span>
+% end
+<span class="sep">|</span>
+% if nelem >= max_per_page:
+<a href="{{offset + 1}}.html">next &rarr;</a>
+% else:
+<span class="inactive">next &rarr;</span>
+% end
+</div>
+
