@@ -49,14 +49,10 @@ def load_config(path):
 
     # Do a first pass for general sanity checking and recursive expansion.
     for s in config.sections():
-        if not config.has_option(s, 'path'):
-            raise configparser.NoOptionError(
-                    '%s is missing the mandatory path' % s)
-
         if config.getboolean(s, 'recursive'):
             for path in os.listdir(config.get(s, 'path')):
-                fullpath = config.get(s, 'path') + '/' + path
-                if not os.path.exists(fullpath + '/HEAD'):
+                fullpath = find_git_dir(config.get(s, 'path') + '/' + path)
+                if not fullpath:
                     continue
 
                 if os.path.exists(fullpath + '/disable_gitweb'):
@@ -76,7 +72,13 @@ def load_config(path):
             config.remove_section(s)
 
     for s in config.sections():
-        fullpath = config.get(s, 'path')
+        fullpath = find_git_dir(config.get(s, 'path'))
+        if not fullpath:
+            raise ValueError(
+                    '%s: path %s is not a valid git repository' % (
+                        s, config.get(s, 'path')))
+
+        config.set(s, 'path', fullpath)
         config.set(s, 'name', s)
 
         desc = config.get(s, 'desc')
@@ -101,6 +103,29 @@ def load_config(path):
             r.info.git_url = open(git_url_file).read()
 
         repos[r.name] = r
+
+def find_git_dir(path):
+    """Returns the path to the git directory for the given repository.
+
+    This function takes a path to a git repository, and returns the path to
+    its git directory. If the repo is bare, it will be the same path;
+    otherwise it will be path + '.git/'.
+
+    An empty string is returned if the given path is not a valid repository.
+    """
+    def check(p):
+        """A dirty check for whether this is a git dir or not."""
+        # Note silent stderr because we expect this to fail and don't want the
+        # noise; and also we strip the final \n from the output.
+        return git.run_git(p,
+                ['rev-parse', '--git-dir'],
+                silent_stderr = True).read()[:-1]
+
+    for p in [ path, path + '/.git' ]:
+        if check(p):
+            return p
+
+    return ''
 
 
 def repo_filter(unused_conf):
@@ -367,8 +392,9 @@ def main():
 
     try:
         load_config(opts.config)
-    except configparser.NoOptionError as e:
+    except (configparser.NoOptionError, ValueError) as e:
         print('Error parsing config:', e)
+        return
 
     if not args:
         parser.error('Must specify an action (serve|generate)')

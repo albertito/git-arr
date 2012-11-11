@@ -41,7 +41,7 @@ class EncodeWrapper:
         return s.decode(self.encoding, errors = self.errors)
 
 
-def run_git(repo_path, params, stdin = None):
+def run_git(repo_path, params, stdin = None, silent_stderr = False):
     """Invokes git with the given parameters.
 
     This function invokes git with the given parameters, and returns a
@@ -49,11 +49,17 @@ def run_git(repo_path, params, stdin = None):
     """
     params = [GIT_BIN, '--git-dir=%s' % repo_path] + list(params)
 
+    stderr = None
+    if silent_stderr:
+        stderr = subprocess.PIPE
+
     if not stdin:
-        p = subprocess.Popen(params, stdin = None, stdout = subprocess.PIPE)
+        p = subprocess.Popen(params,
+                stdin = None, stdout = subprocess.PIPE, stderr = stderr)
     else:
         p = subprocess.Popen(params,
-                stdin = subprocess.PIPE, stdout = subprocess.PIPE)
+                stdin = subprocess.PIPE, stdout = subprocess.PIPE,
+                stderr = stderr)
         p.stdin.write(stdin)
         p.stdin.close()
 
