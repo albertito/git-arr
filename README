@@ -19,6 +19,10 @@ information.
 Getting started
 ---------------
 
+You will need Python, and the bottle.py framework (the package is usually
+called python-bottle in most distributions).
+
+
 First, create a configuration file for your repositories. You can start by
 copying sample.conf, which has the list of the available options.
 
@@ -41,9 +45,9 @@ use, by running:
 That can be useful when making changes to the software itself.
 
 
-Where to report bugs
---------------------
+Contact
+-------
 
-If you want to report bugs, or have any questions or comments, just let me
-know at albertito@blitiri.com.ar.
+If you want to report bugs, send patches, or have any questions or comments,
+just let me know at albertito@blitiri.com.ar.
 
