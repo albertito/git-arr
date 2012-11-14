@@ -36,7 +36,7 @@
     <a href="">{{!fname.html}}</a>
 </h3>
 
-% if has_colorizer():
+% if can_colorize(blob):
 {{!colorize_blob(fname.unicode, blob)}}
 % else:
 <pre class="blob-body">

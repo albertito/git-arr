@@ -55,7 +55,7 @@
 
 <hr/>
 
-% if has_colorizer():
+% if can_colorize(c.diff.body):
 {{!colorize_diff(c.diff.body)}}
 % else:
 <pre class="diff-body">

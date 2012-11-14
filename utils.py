@@ -18,8 +18,28 @@ def shorten(s, width = 60):
         return s
     return s[:57] + "..."
 
-def has_colorizer():
-    return pygments is not None
+def can_colorize(s):
+    """True if we can colorize the string, False otherwise."""
+    if pygments is None:
+        return False
+
+    # Pygments can take a huge amount of time with long files, or with very
+    # long lines; these are heuristics to try to avoid those situations.
+    if len(s) > (512 * 1024):
+        return False
+
+    # If any of the first 5 lines is over 300 characters long, don't colorize.
+    start = 0
+    for i in range(5):
+        pos = s.find('\n', start)
+        if pos == -1:
+            break
+
+        if pos - start > 300:
+            return False
+        start = pos + 1
+
+    return True
 
 def colorize_diff(s):
     lexer = lexers.DiffLexer(encoding = 'utf-8')

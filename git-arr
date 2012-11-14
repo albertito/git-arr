@@ -158,7 +158,7 @@ def with_utils(f):
     """
     utilities = {
         'shorten': utils.shorten,
-        'has_colorizer': utils.has_colorizer,
+        'can_colorize': utils.can_colorize,
         'colorize_diff': utils.colorize_diff,
         'colorize_blob': utils.colorize_blob,
         'abort': bottle.abort,
