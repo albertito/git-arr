@@ -50,9 +50,13 @@ def colorize_diff(s):
 
 def colorize_blob(fname, s):
     try:
-        lexer = lexers.guess_lexer_for_filename(fname, s)
+        lexer = lexers.guess_lexer_for_filename(fname, s, encoding = 'utf-8')
     except lexers.ClassNotFound:
-        lexer = lexers.TextLexer(encoding = 'utf-8')
+        try:
+            lexer = lexers.guess_lexer(s[:200], encoding = 'utf-8')
+        except lexers.ClassNotFound:
+            lexer = lexers.TextLexer(encoding = 'utf-8')
+
     formatter = HtmlFormatter(encoding = 'utf-8',
                     cssclass = 'source_code',
                     linenos = 'table')
