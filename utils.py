@@ -52,10 +52,15 @@ def colorize_blob(fname, s):
     try:
         lexer = lexers.guess_lexer_for_filename(fname, s, encoding = 'utf-8')
     except lexers.ClassNotFound:
-        try:
-            lexer = lexers.guess_lexer(s[:200], encoding = 'utf-8')
-        except lexers.ClassNotFound:
-            lexer = lexers.TextLexer(encoding = 'utf-8')
+        # Only try to guess lexers if the file starts with a shebang,
+        # otherwise it's likely a text file and guess_lexer() is prone to
+        # make mistakes with those.
+        lexer = lexers.TextLexer(encoding = 'utf-8')
+        if s.startswith('#!'):
+            try:
+                lexer = lexers.guess_lexer(s[:80], encoding = 'utf-8')
+            except lexers.ClassNotFound:
+                pass
 
     formatter = HtmlFormatter(encoding = 'utf-8',
                     cssclass = 'source_code',
