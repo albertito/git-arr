@@ -247,7 +247,7 @@ def static(path):
 # Static HTML generation
 #
 
-def generate(output):
+def generate(output, skip_index = False):
     """Generate static html to the output directory."""
     def write_to(path, func_or_str, args = (), mtime = None):
         path = output + '/' + path
@@ -323,7 +323,8 @@ def generate(output):
                             (str(r.name), str(bn), oname.raw),
                         tree, (r, bn, oname.url), mtime)
 
-    write_to('index.html', index())
+    if not skip_index:
+        write_to('index.html', index())
 
     # We can't call static() because it relies on HTTP headers.
     read_f = lambda f: open(f).read()
@@ -384,6 +385,7 @@ def main():
     parser.add_option('-o', '--output', metavar = 'DIR',
             help = 'output directory (for generate)')
     parser.add_option('', '--only', metavar = 'REPO', action = 'append',
+            default = [],
             help = 'generate/serve only this repository')
     opts, args = parser.parse_args()
 
@@ -400,15 +402,17 @@ def main():
         parser.error('Must specify an action (serve|generate)')
 
     if opts.only:
-        global repos
-        repos = [ r for r in repos if r.name in opts.only ]
+        for rname in list(repos.keys()):
+            if rname not in opts.only:
+                del repos[rname]
 
     if args[0] == 'serve':
         bottle.run(host = 'localhost', port = 8008, reloader = True)
     elif args[0] == 'generate':
         if not opts.output:
             parser.error('Must specify --output')
-        generate(output = opts.output)
+        generate(output = opts.output,
+                skip_index = len(opts.only) > 0)
     else:
         parser.error('Unknown action %s' % args[0])
 
