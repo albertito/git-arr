@@ -41,7 +41,7 @@ def load_config(path):
         'web_url': '',
         'web_url_file': 'web_url',
         'git_url': '',
-        'git_url_file': 'git_url',
+        'git_url_file': 'cloneurl',
     }
 
     config = configparser.SafeConfigParser(defaults)
