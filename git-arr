@@ -5,6 +5,7 @@ git-arr: A git web html generator.
 
 from __future__ import print_function
 
+import sys
 import os
 import math
 import optparse
@@ -18,6 +19,18 @@ import bottle
 
 import git
 import utils
+
+
+# Tell bottle where to find the views.
+# Note this assumes they live next to the executable, and that is not a good
+# assumption; but it's good enough for now.
+bottle.TEMPLATE_PATH.insert(
+        0, os.path.abspath(os.path.dirname(sys.argv[0])) + '/views/')
+
+# The path to our static files.
+# Note this assumes they live next to the executable, and that is not a good
+# assumption; but it's good enough for now.
+static_path = os.path.abspath(os.path.dirname(sys.argv[0])) + '/static/'
 
 
 # The list of repositories is a global variable for convenience. It will be
@@ -240,7 +253,7 @@ def blob(repo, bname, fname, dirname = ''):
 
 @bottle.route('/static/<path:path>')
 def static(path):
-    return bottle.static_file(path, root = './static/')
+    return bottle.static_file(path, root = static_path)
 
 
 #
@@ -328,10 +341,10 @@ def generate(output, skip_index = False):
 
     # We can't call static() because it relies on HTTP headers.
     read_f = lambda f: open(f).read()
-    write_to('static/git-arr.css', read_f, ['static/git-arr.css'],
-            os.stat('static/git-arr.css').st_mtime)
-    write_to('static/syntax.css', read_f, ['static/syntax.css'],
-            os.stat('static/syntax.css').st_mtime)
+    write_to('static/git-arr.css', read_f, [static_path + '/git-arr.css'],
+            os.stat(static_path + '/git-arr.css').st_mtime)
+    write_to('static/syntax.css', read_f, [static_path + '/syntax.css'],
+            os.stat(static_path + '/syntax.css').st_mtime)
 
     for r in sorted(repos.values(), key = lambda r: r.name):
         write_to('r/%s/index.html' % r.name, summary(r))
