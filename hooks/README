@@ -1,0 +1,14 @@
+
+You can use the post-receive hook to automatically generate the repository
+view after a push.
+
+To do so, configure in your target repository the following options:
+
+  $ git config hooks.git-arr-config /path/to/site.conf
+  $ git config hooks.git-arr-output /var/www/git/
+
+  # Only if the git-arr executable is not on your $PATH.
+  $ git config hooks.git-arr-path /path/to/git-arr
+
+Then copy the post-receive file to the "hooks" directory in your repository.
+

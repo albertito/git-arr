@@ -1,0 +1,58 @@
+#!/bin/sh
+#
+# git-arr post-receive hook
+#
+# This is a script intended to be used as a post-receive hook, which updates
+# its git-arr view.
+#
+# You should place it /path/to/your/repository.git/hooks/.
+
+# Config
+# --------
+#
+# hooks.git-arr-config
+#   The git-arr configuration file to use. Mandatory.
+#   Example: /srv/git-arr/site.conf
+#
+# hooks.git-arr-output
+#   Directory for the generated output. Mandatory.
+#   Example: /srv/www/git/
+#
+# hooks.git-arr-path
+#   The path to the git-arr executable. Optional, defaults to "git-arr".
+#
+# hooks.git-arr-repo-name
+#   The git-arr repository name. Optional, defaults to the path name.
+
+git_arr_config="$(git config --path hooks.git-arr-config)"
+git_arr_output="$(git config --path hooks.git-arr-output)"
+
+git_arr_path="$(git config --path hooks.git-arr-path 2> /dev/null)"
+git_arr_repo_name="$(git config hooks.git-arr-repo-name 2> /dev/null)"
+
+if [ -z "$git_arr_config" -o -z "$git_arr_output" ]; then
+	echo "Error: missing config options."
+	echo "Both hooks.git-arr-config and hooks.git-arr-output must be set."
+	exit 1
+fi
+
+if [ -z "$git_arr_path" ]; then
+	git_arr_path=git-arr
+fi
+
+if [ -z "$git_arr_repo_name" ]; then
+	PARENT_DIR=$(cd $(dirname "$0")/..; echo "$PWD")
+	git_arr_repo_name=$(basename "$PARENT_DIR")
+fi
+
+echo "Running git-arr"
+$git_arr_path --config "$git_arr_config" generate \
+	--output "$git_arr_output" \
+	--only "$git_arr_repo_name" > /dev/null
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+	echo "Error running git-arr"
+	exit $RESULT
+fi
+
