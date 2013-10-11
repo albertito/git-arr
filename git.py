@@ -397,7 +397,12 @@ class Commit (object):
     @staticmethod
     def from_str(repo, buf):
         """Parses git rev-list output, returns a commit object."""
-        header, raw_message = buf.split('\n\n', 1)
+        if '\n\n' in buf:
+            # Header, commit message
+            header, raw_message = buf.split('\n\n', 1)
+        else:
+            # Header only, no commit message
+            header, raw_message = buf.rstrip(), '    '
 
         header_lines = header.split('\n')
         commit_id = header_lines.pop(0)
