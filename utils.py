@@ -12,6 +12,10 @@ try:
 except ImportError:
     pygments = None
 
+try:
+    import markdown
+except ImportError:
+    markdown = None
 
 def shorten(s, width = 60):
     if len(s) < 60:
@@ -41,6 +45,13 @@ def can_colorize(s):
 
     return True
 
+def can_markdown(fname):
+    """True if we can process file through markdown, False otherwise."""
+    if markdown is None:
+        return False
+
+    return fname.endswith(".md")
+
 def colorize_diff(s):
     lexer = lexers.DiffLexer(encoding = 'utf-8')
     formatter = HtmlFormatter(encoding = 'utf-8',
@@ -67,4 +78,7 @@ def colorize_blob(fname, s):
                     linenos = 'table')
 
     return highlight(s, lexer, formatter)
+
+def markdown_blob(s):
+    return markdown.markdown(s)
 
