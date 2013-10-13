@@ -17,6 +17,8 @@ try:
 except ImportError:
     markdown = None
 
+import base64
+
 def shorten(s, width = 60):
     if len(s) < 60:
         return s
@@ -52,6 +54,15 @@ def can_markdown(fname):
 
     return fname.endswith(".md")
 
+def can_embed_image(fname):
+    """True if we can embed image file in HTML, False otherwise."""
+
+    exts = [ 'jpg', 'jpeg', 'png', 'gif', 'svg' ]
+    if '.' in fname and fname.split('.')[-1] in exts:
+        return True
+
+    return False
+
 def colorize_diff(s):
     lexer = lexers.DiffLexer(encoding = 'utf-8')
     formatter = HtmlFormatter(encoding = 'utf-8',
@@ -81,4 +92,21 @@ def colorize_blob(fname, s):
 
 def markdown_blob(s):
     return markdown.markdown(s)
+
+def embed_image_blob(repo, dirname, fname):
+    ext_to_mimetype = {'jpg': 'image/jpeg',
+                       'jpeg': 'image/jpeg',
+                       'png': 'image/png',
+                       'gif': 'image/gif',
+                       'svg': 'image/svg+xml',}
+
+    mimetype = ext_to_mimetype[fname.split('.')[-1]]
+
+    # Unfortunately, bottle seems to require utf-8 encoded data.
+    # We have to refetch the blob with raw=True, because the utf-8 encoded
+    # version of the blob available in the bottle template discards binary data.
+    raw_blob = repo.blob(dirname + fname, raw = True)
+
+    return '<img style="max-width:100%;" src="data:{0};base64,{1}" />'.format( \
+                                    mimetype, base64.b64encode(raw_blob))
 

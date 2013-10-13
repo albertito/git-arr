@@ -325,7 +325,7 @@ class Repo:
             ref = self.branch
         return Tree(self, ref)
 
-    def blob(self, path, ref = None):
+    def blob(self, path, ref = None, raw = False):
         """Returns the contents of the given path."""
         if not ref:
             ref = self.branch
@@ -340,6 +340,10 @@ class Repo:
         head = out.readline()
         if not head or head.strip().endswith('missing'):
             return None
+
+        # Raw option in case we need a binary blob and not a utf-8 encoded one.
+        if raw:
+            return out.fd.read()
 
         return out.read()
 

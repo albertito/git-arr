@@ -176,6 +176,8 @@ def with_utils(f):
         'colorize_blob': utils.colorize_blob,
         'can_markdown': utils.can_markdown,
         'markdown_blob': utils.markdown_blob,
+        'can_embed_image': utils.can_embed_image,
+        'embed_image_blob': utils.embed_image_blob,
         'abort': bottle.abort,
         'smstr': git.smstr,
     }
