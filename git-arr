@@ -269,6 +269,16 @@ def static(path):
 # Static HTML generation
 #
 
+def is_404(e):
+    """True if e is an HTTPError with status 404, False otherwise."""
+    # We need this because older bottle.py versions put the status code in
+    # e.status as an integer, and newer versions make that a string, and using
+    # e.status_code for the code.
+    if isinstance(e.status, int):
+        return e.status == 404
+    else:
+        return e.status_code == 404
+
 def generate(output, skip_index = False):
     """Generate static html to the output directory."""
     def write_to(path, func_or_str, args = (), mtime = None):
@@ -396,7 +406,7 @@ def generate(output, skip_index = False):
                 # Some repos can have tags pointing to non-commits. This
                 # happens in the Linux Kernel's v2.6.11, which points directly
                 # to a tree. Ignore them.
-                if e.status_code == 404:
+                if is_404(e):
                     print('404 in tag %s (%s)' % (tag_name, obj_id))
                 else:
                     raise
