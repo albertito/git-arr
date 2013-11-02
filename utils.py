@@ -48,20 +48,23 @@ def can_colorize(s):
 
     return True
 
-def can_markdown(fname):
+def can_markdown(repo, fname):
     """True if we can process file through markdown, False otherwise."""
     if markdown is None:
         return False
 
+    if not repo.info.embed_markdown:
+        return False
+
     return fname.endswith(".md")
 
-def can_embed_image(fname):
+def can_embed_image(repo, fname):
     """True if we can embed image file in HTML, False otherwise."""
-    exts = [ 'jpg', 'jpeg', 'png', 'gif' ]
-    if '.' in fname and fname.split('.')[-1].lower() in exts:
-        return True
+    if not repo.info.embed_images:
+        return False
 
-    return False
+    return (('.' in fname) and
+            (fname.split('.')[-1].lower() in [ 'jpg', 'jpeg', 'png', 'gif' ]))
 
 def colorize_diff(s):
     lexer = lexers.DiffLexer(encoding = 'utf-8')

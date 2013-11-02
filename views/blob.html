@@ -36,9 +36,9 @@
     <a href="">{{!fname.html}}</a>
 </h3>
 
-% if can_embed_image(fname.unicode):
+% if can_embed_image(repo, fname.unicode):
 {{!embed_image_blob(repo, dirname.raw, fname.raw)}}
-% elif can_markdown(fname.unicode):
+% elif can_markdown(repo, fname.unicode):
 {{!markdown_blob(blob)}}
 % elif can_colorize(blob):
 {{!colorize_blob(fname.unicode, blob)}}

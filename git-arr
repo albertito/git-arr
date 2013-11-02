@@ -55,6 +55,8 @@ def load_config(path):
         'web_url_file': 'web_url',
         'git_url': '',
         'git_url_file': 'cloneurl',
+        'embed_markdown': 'yes',
+        'embed_images': 'no',
     }
 
     config = configparser.SafeConfigParser(defaults)
@@ -114,6 +116,9 @@ def load_config(path):
         git_url_file = fullpath + '/' + config.get(s, 'git_url_file')
         if not r.info.git_url and os.path.isfile(git_url_file):
             r.info.git_url = open(git_url_file).read()
+
+        r.info.embed_markdown = config.getboolean(s, 'embed_markdown')
+        r.info.embed_images = config.getboolean(s, 'embed_images')
 
         repos[r.name] = r
 
