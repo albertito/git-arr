@@ -5,9 +5,10 @@
 <title>git</title>
 <link rel="stylesheet" type="text/css" href="static/git-arr.css"/>
 <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<script src="static/git-arr.js"></script>
 </head>
 
-<body class="index">
+<body class="index" onload="replace_timestamps()">
 <h1>git</h1>
 
 <table class="nice">
@@ -20,6 +21,7 @@
     <tr>
         <td><a href="r/{{repo.name}}/">{{repo.name}}</a></td>
         <td><a href="r/{{repo.name}}/">{{repo.info.desc}}</a></td>
+        <td><span class="age">{{repo.last_commit_timestamp()}}</span></td>
     </tr>
     %end
 </table>

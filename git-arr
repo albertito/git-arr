@@ -352,6 +352,8 @@ def generate(output, skip_index = False):
     read_f = lambda f: open(f).read()
     write_to('static/git-arr.css', read_f, [static_path + '/git-arr.css'],
             os.stat(static_path + '/git-arr.css').st_mtime)
+    write_to('static/git-arr.js', read_f, [static_path + '/git-arr.js'],
+            os.stat(static_path + '/git-arr.js').st_mtime)
     write_to('static/syntax.css', read_f, [static_path + '/syntax.css'],
             os.stat(static_path + '/syntax.css').st_mtime)
 

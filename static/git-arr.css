@@ -100,6 +100,26 @@ span.tag {
     background-color: #ffff88;
 }
 
+/* Age of an object.
+ * Note this is hidden by default as we rely on javascript to show it. */
+span.age {
+    display: none;
+    color: gray;
+    font-size: x-small;
+}
+
+span.age-band0 {
+    color: darkgreen;
+}
+
+span.age-band1 {
+    color: green;
+}
+
+span.age-band2 {
+    color: seagreen;
+}
+
 /* Commit message and diff. */
 pre.commit-message {
     font-size: large;

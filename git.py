@@ -207,11 +207,13 @@ class Repo:
         """Returns a GitCommand() on our path."""
         return GitCommand(self.path, cmd)
 
-    def for_each_ref(self, pattern = None, sort = None):
+    def for_each_ref(self, pattern = None, sort = None, count = None):
         """Returns a list of references."""
         cmd = self.cmd('for-each-ref')
         if sort:
             cmd.sort = sort
+        if count:
+            cmd.count = count
         if pattern:
             cmd.arg(pattern)
 
@@ -346,6 +348,15 @@ class Repo:
             return out.fd.read()
 
         return out.read()
+
+    def last_commit_timestamp(self):
+        """Return the timestamp of the last commit."""
+        refs = self.for_each_ref(pattern = 'refs/heads/',
+                sort = '-committerdate', count = 1)
+        for obj_id, _, _ in refs:
+            commit = self.commit(obj_id)
+            return commit.committer_epoch
+        return -1
 
 
 class Commit (object):
