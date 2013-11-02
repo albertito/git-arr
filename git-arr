@@ -394,7 +394,7 @@ def generate(output, skip_index = False):
                 # Some repos can have tags pointing to non-commits. This
                 # happens in the Linux Kernel's v2.6.11, which points directly
                 # to a tree. Ignore them.
-                if e.status == 404:
+                if e.status_code == 404:
                     print('404 in tag %s (%s)' % (tag_name, obj_id))
                 else:
                     raise
