@@ -18,6 +18,7 @@ except ImportError:
     markdown = None
 
 import base64
+import mimetypes
 
 def shorten(s, width = 60):
     if len(s) < 60:
@@ -56,9 +57,8 @@ def can_markdown(fname):
 
 def can_embed_image(fname):
     """True if we can embed image file in HTML, False otherwise."""
-
-    exts = [ 'jpg', 'jpeg', 'png', 'gif', 'svg' ]
-    if '.' in fname and fname.split('.')[-1] in exts:
+    exts = [ 'jpg', 'jpeg', 'png', 'gif' ]
+    if '.' in fname and fname.split('.')[-1].lower() in exts:
         return True
 
     return False
@@ -94,13 +94,7 @@ def markdown_blob(s):
     return markdown.markdown(s)
 
 def embed_image_blob(repo, dirname, fname):
-    ext_to_mimetype = {'jpg': 'image/jpeg',
-                       'jpeg': 'image/jpeg',
-                       'png': 'image/png',
-                       'gif': 'image/gif',
-                       'svg': 'image/svg+xml',}
-
-    mimetype = ext_to_mimetype[fname.split('.')[-1]]
+    mimetype = mimetypes.guess_type(fname)[0]
 
     # Unfortunately, bottle seems to require utf-8 encoded data.
     # We have to refetch the blob with raw=True, because the utf-8 encoded
