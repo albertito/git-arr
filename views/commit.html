@@ -22,10 +22,10 @@
             <span class="date" title="{{c.author_date}}">
                 {{c.author_date.utc}} UTC</span></td></tr>
     <tr><td>committer</td>
-        <td><span class="name">{{c.author_name}}</span>
-            <span class="email">&lt;{{c.author_email}}&gt;</span><br/>
-            <span class="date" title="{{c.author_date}}">
-                {{c.author_date.utc}} UTC</span></td></tr>
+        <td><span class="name">{{c.committer_name}}</span>
+            <span class="email">&lt;{{c.committer_email}}&gt;</span><br/>
+            <span class="date" title="{{c.committer_date}}">
+                {{c.committer_date.utc}} UTC</span></td></tr>
 
 % for p in c.parents:
     <tr><td>parent</td>
