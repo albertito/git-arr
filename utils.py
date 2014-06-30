@@ -89,7 +89,9 @@ def colorize_blob(fname, s):
 
     formatter = HtmlFormatter(encoding = 'utf-8',
                     cssclass = 'source_code',
-                    linenos = 'table')
+                    linenos = 'table',
+                    anchorlinenos = True,
+                    lineanchors = 'line')
 
     return highlight(s, lexer, formatter)
 
