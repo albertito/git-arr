@@ -29,7 +29,9 @@
     <a href="{{relroot}}">[{{repo.branch}}]</a> /
 % base = smstr(relroot)
 % for c in dirname.split('/'):
-%   if not c.raw: continue
+%   if not c.raw:
+%     continue
+%   end
     <a href="{{base.url}}{{c.url}}/">{{c.unicode}}</a> /
 %   base += c + '/'
 % end
