@@ -36,7 +36,7 @@
 </h3>
 
 <table class="nice ls">
-% key_func = lambda (t, n, s): (0 if t == 'tree' else 1, n.raw)
+% key_func = lambda (t, n, s): (t != 'tree', n.raw)
 % for type, name, size in sorted(tree.ls(dirname.raw), key = key_func):
     <tr class="{{type}}">
 %   if type == "blob":
