@@ -452,7 +452,7 @@ class Date:
     def __init__(self, epoch, tz):
         self.epoch = int(epoch)
         self.tz = tz
-        self.utc = datetime.datetime.fromtimestamp(self.epoch)
+        self.utc = datetime.datetime.utcfromtimestamp(self.epoch)
 
         self.tz_sec_offset_min = int(tz[1:3]) * 60 + int(tz[4:])
         if tz[0] == '-':
