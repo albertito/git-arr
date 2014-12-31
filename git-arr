@@ -224,8 +224,8 @@ def commit(repo, cid):
 
     return dict(repo = repo, c=c)
 
-@bottle.route('/r/<repo:repo>/b/<bname>/t/f=<fname:path>.html')
-@bottle.route('/r/<repo:repo>/b/<bname>/t/<dirname:path>/f=<fname:path>.html')
+@bottle.route('/r/<repo:repo>/b/<bname:path>/t/f=<fname:path>.html')
+@bottle.route('/r/<repo:repo>/b/<bname:path>/t/<dirname:path>/f=<fname:path>.html')
 @bottle.view('blob')
 @with_utils
 def blob(repo, bname, fname, dirname = ''):
@@ -244,8 +244,8 @@ def blob(repo, bname, fname, dirname = ''):
 
     return dict(repo = r, dirname = dirname, fname = fname, blob = content)
 
-@bottle.route('/r/<repo:repo>/b/<bname>/t/')
-@bottle.route('/r/<repo:repo>/b/<bname>/t/<dirname:path>/')
+@bottle.route('/r/<repo:repo>/b/<bname:path>/t/')
+@bottle.route('/r/<repo:repo>/b/<bname:path>/t/<dirname:path>/')
 @bottle.view('tree')
 @with_utils
 def tree(repo, bname, dirname = ''):
@@ -257,8 +257,8 @@ def tree(repo, bname, dirname = ''):
     r = repo.new_in_branch(bname)
     return dict(repo = r, tree = r.tree(), dirname = dirname)
 
-@bottle.route('/r/<repo:repo>/b/<bname>/')
-@bottle.route('/r/<repo:repo>/b/<bname>/<offset:int>.html')
+@bottle.route('/r/<repo:repo>/b/<bname:path>/')
+@bottle.route('/r/<repo:repo>/b/<bname:path>/<offset:int>.html')
 @bottle.view('branch')
 @with_utils
 def branch(repo, bname, offset = 0):
