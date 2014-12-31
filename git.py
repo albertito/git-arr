@@ -253,6 +253,7 @@ class Repo:
             cmd.max_count = limit
 
         cmd.arg(ref)
+        cmd.arg('--')
 
         for l in cmd.run():
             yield l.rstrip('\n')
@@ -273,6 +274,7 @@ class Repo:
         cmd.header = None
 
         cmd.arg(ref)
+        cmd.arg('--')
 
         info_buffer = ''
         count = 0

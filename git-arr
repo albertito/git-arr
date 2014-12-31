@@ -380,7 +380,7 @@ def generate(output, skip_index = False):
 
             # To avoid regenerating files that have not changed, we will
             # instruct write_to() to set their mtime to the branch's committer
-            # date, and then compare against it to decide wether or not to
+            # date, and then compare against it to decide whether or not to
             # write.
             branch_mtime = r.commit(bn).committer_date.epoch
 
