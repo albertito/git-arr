@@ -347,8 +347,9 @@ def generate(output, skip_index = False):
                 dirname = git.smstr(os.path.dirname(oname.raw))
                 fname = git.smstr(os.path.basename(oname.raw))
                 write_to(
-                    'r/%s/b/%s/t/%s/f=%s.html' %
-                        (str(r.name), str(bn), dirname.raw, fname.raw),
+                    'r/%s/b/%s/t/%s%sf=%s.html' %
+                        (str(r.name), str(bn),
+                         dirname.raw, '/' if dirname.raw else '', fname.raw),
                     blob, (r, bn, fname.url, dirname.url), mtime)
             else:
                 write_to('r/%s/b/%s/t/%s/index.html' %
