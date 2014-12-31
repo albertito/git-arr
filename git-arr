@@ -214,13 +214,6 @@ def index():
 def summary(repo):
     return dict(repo = repo)
 
-@bottle.route('/r/<repo:repo>/b/<bname>/')
-@bottle.route('/r/<repo:repo>/b/<bname>/<offset:int>.html')
-@bottle.view('branch')
-@with_utils
-def branch(repo, bname, offset = 0):
-    return dict(repo = repo.new_in_branch(bname), offset = offset)
-
 @bottle.route('/r/<repo:repo>/c/<cid:re:[0-9a-f]{5,40}>/')
 @bottle.view('commit')
 @with_utils
@@ -230,19 +223,6 @@ def commit(repo, cid):
         bottle.abort(404, 'Commit not found')
 
     return dict(repo = repo, c=c)
-
-@bottle.route('/r/<repo:repo>/b/<bname>/t/')
-@bottle.route('/r/<repo:repo>/b/<bname>/t/<dirname:path>/')
-@bottle.view('tree')
-@with_utils
-def tree(repo, bname, dirname = ''):
-    if dirname and not dirname.endswith('/'):
-        dirname = dirname + '/'
-
-    dirname = git.smstr.from_url(dirname)
-
-    r = repo.new_in_branch(bname)
-    return dict(repo = r, tree = r.tree(), dirname = dirname)
 
 @bottle.route('/r/<repo:repo>/b/<bname>/t/f=<fname:path>.html')
 @bottle.route('/r/<repo:repo>/b/<bname>/t/<dirname:path>/f=<fname:path>.html')
@@ -263,6 +243,26 @@ def blob(repo, bname, fname, dirname = ''):
         bottle.abort(404, "File %r not found in branch %s" % (path, bname))
 
     return dict(repo = r, dirname = dirname, fname = fname, blob = content)
+
+@bottle.route('/r/<repo:repo>/b/<bname>/t/')
+@bottle.route('/r/<repo:repo>/b/<bname>/t/<dirname:path>/')
+@bottle.view('tree')
+@with_utils
+def tree(repo, bname, dirname = ''):
+    if dirname and not dirname.endswith('/'):
+        dirname = dirname + '/'
+
+    dirname = git.smstr.from_url(dirname)
+
+    r = repo.new_in_branch(bname)
+    return dict(repo = r, tree = r.tree(), dirname = dirname)
+
+@bottle.route('/r/<repo:repo>/b/<bname>/')
+@bottle.route('/r/<repo:repo>/b/<bname>/<offset:int>.html')
+@bottle.view('branch')
+@with_utils
+def branch(repo, bname, offset = 0):
+    return dict(repo = repo.new_in_branch(bname), offset = offset)
 
 @bottle.route('/static/<path:path>')
 def static(path):
