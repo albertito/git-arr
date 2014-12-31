@@ -217,7 +217,7 @@ def summary(repo):
 def branch(repo, bname, offset = 0):
     return dict(repo = repo.new_in_branch(bname), offset = offset)
 
-@bottle.route('/r/<repo:repo>/c/<cid:re:[0-9a-z]{5,40}>/')
+@bottle.route('/r/<repo:repo>/c/<cid:re:[0-9a-f]{5,40}>/')
 @bottle.view('commit')
 @with_utils
 def commit(repo, cid):
