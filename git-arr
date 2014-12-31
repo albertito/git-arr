@@ -105,6 +105,8 @@ def load_config(path):
         r.info.commits_in_summary = config.getint(s, 'commits_in_summary')
         r.info.commits_per_page = config.getint(s, 'commits_per_page')
         r.info.max_pages = config.getint(s, 'max_pages')
+        if r.info.max_pages <= 0:
+            r.info.max_pages = sys.maxint
         r.info.generate_tree = config.getboolean(s, 'tree')
 
         r.info.web_url = config.get(s, 'web_url')
