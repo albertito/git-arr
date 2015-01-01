@@ -30,6 +30,7 @@
 % if more:
 %   commits = commits[:-1]
 % end
+% more = more and offset + 1 < repo.info.max_pages
 
 % include paginate more = more, offset = offset
 
