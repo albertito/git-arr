@@ -46,6 +46,7 @@ def load_config(path):
     """
     defaults = {
         'tree': 'yes',
+        'rootdiff': 'yes',
         'desc': '',
         'recursive': 'no',
         'commits_in_summary': '10',
@@ -108,6 +109,7 @@ def load_config(path):
         if r.info.max_pages <= 0:
             r.info.max_pages = sys.maxint
         r.info.generate_tree = config.getboolean(s, 'tree')
+        r.info.root_diff = config.getboolean(s, 'rootdiff')
 
         r.info.web_url = config.get(s, 'web_url')
         web_url_file = fullpath + '/' + config.get(s, 'web_url_file')

@@ -198,8 +198,6 @@ class Repo:
     def __init__(self, path, branch = None, name = None, info = None):
         self.path = path
         self.branch = branch
-
-        # We don't need these, but provide them for the users' convenience.
         self.name = name
         self.info = info or SimpleNamespace()
 
@@ -303,6 +301,8 @@ class Repo:
         cmd.patch = None
         cmd.numstat = None
         cmd.find_renames = None
+        if (self.info.root_diff):
+            cmd.root = None
         # Note we intentionally do not use -z, as the filename is just for
         # reference, and it is safer to let git do the escaping.
 
