@@ -18,7 +18,7 @@
 </p>
 
 % commits = repo.commits("refs/heads/" + repo.branch,
-%                           limit = repo.info.commits_per_page,
+%                           limit = repo.info.commits_per_page + 1,
 %                           offset = repo.info.commits_per_page * offset)
 % commits = list(commits)
 
@@ -26,8 +26,12 @@
 %   abort(404, "No more commits")
 % end
 
+% more = len(commits) > repo.info.commits_per_page
+% if more:
+%   commits = commits[:-1]
+% end
 
-% include paginate nelem = len(commits), max_per_page = repo.info.commits_per_page, offset = offset
+% include paginate more = more, offset = offset
 
 % kwargs = dict(repo=repo, commits=commits,
 %               shorten=shorten, repo_root="../..")
@@ -35,7 +39,7 @@
 
 <p/>
 
-% include paginate nelem = len(commits), max_per_page = repo.info.commits_per_page, offset = offset
+% include paginate more = more, offset = offset
 
 </body>
 </html>
