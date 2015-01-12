@@ -51,7 +51,7 @@ def load_config(path):
         'recursive': 'no',
         'commits_in_summary': '10',
         'commits_per_page': '50',
-        'max_pages': '5',
+        'max_pages': '250',
         'web_url': '',
         'web_url_file': 'web_url',
         'git_url': '',
