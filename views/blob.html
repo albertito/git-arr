@@ -42,12 +42,20 @@
 % if can_embed_image(repo, fname.unicode):
 {{!embed_image_blob(fname.raw, blob.raw_content)}}
 % elif is_binary(blob.raw_content):
-<table class="nice">
+<table class="nice blob-binary">
     <tr>
-        <td>
+        <td colspan="4">
             binary &mdash; {{'{:,}'.format(len(blob.raw_content))}} bytes
         </td>
     </tr>
+%   for offset, hex1, hex2, text in hexdump(blob.raw_content):
+    <tr>
+        <td class="offset">{{offset}}</td>
+        <td><pre>{{hex1}}</pre></td>
+        <td><pre>{{hex2}}</pre></td>
+        <td><pre>{{text}}</pre></td>
+    </tr>
+%   end
 </table>
 % elif can_markdown(repo, fname.unicode):
 {{!markdown_blob(blob.utf8_content)}}

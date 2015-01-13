@@ -159,6 +159,18 @@ pre.blob-body {
     font-size: medium;
 }
 
+table.blob-binary pre {
+    padding: 0;
+    margin: 0;
+}
+
+table.blob-binary .offset {
+    text-align: right;
+    font-size: x-small;
+    color: darkgray;
+    border-right: 1px solid #eee;
+}
+
 /* Pygments overrides. */
 div.linenodiv {
     padding-right: 0.5em;

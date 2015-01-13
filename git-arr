@@ -188,6 +188,7 @@ def with_utils(f):
         'can_embed_image': utils.can_embed_image,
         'embed_image_blob': utils.embed_image_blob,
         'is_binary': utils.is_binary,
+        'hexdump': utils.hexdump,
         'abort': bottle.abort,
         'smstr': git.smstr,
     }

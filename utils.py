@@ -19,6 +19,7 @@ except ImportError:
 
 import base64
 import mimetypes
+import string
 
 def shorten(s, width = 60):
     if len(s) < 60:
@@ -106,3 +107,14 @@ def embed_image_blob(fname, image_data):
 def is_binary(s):
     # Git considers a blob binary if NUL in first ~8KB, so do the same.
     return '\0' in s[:8192]
+
+def hexdump(s):
+    graph = string.ascii_letters + string.digits + string.punctuation + ' '
+    offset = 0
+    while s:
+        t = s[:16]
+        hexvals = ['%.2x' % ord(c) for c in t]
+        text = ''.join(c if c in graph else '.' for c in t)
+        yield offset, ' '.join(hexvals[:8]), ' '.join(hexvals[8:]), text
+        offset += 16
+        s = s[16:]
