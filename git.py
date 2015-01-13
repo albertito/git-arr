@@ -344,6 +344,7 @@ class Repo:
         if not ref:
             ref = self.branch
         cmd = self.cmd('cat-file')
+        cmd.raw(raw)
         cmd.batch = None
 
         if isinstance(ref, unicode):
@@ -354,10 +355,6 @@ class Repo:
         head = out.readline()
         if not head or head.strip().endswith('missing'):
             return None
-
-        # Raw option in case we need a binary blob and not a utf-8 encoded one.
-        if raw:
-            return out.fd.read()
 
         return out.read()
 
