@@ -41,7 +41,7 @@ class EncodeWrapper:
         return s.decode(self.encoding, errors = self.errors)
 
 
-def run_git(repo_path, params, stdin = None, silent_stderr = False):
+def run_git(repo_path, params, stdin = None, silent_stderr = False, raw = False):
     """Invokes git with the given parameters.
 
     This function invokes git with the given parameters, and returns a
@@ -62,6 +62,9 @@ def run_git(repo_path, params, stdin = None, silent_stderr = False):
                 stderr = stderr)
         p.stdin.write(stdin)
         p.stdin.close()
+
+    if raw:
+        return p.stdout
 
     # We need to wrap stdout if we want to decode it as utf8, subprocess
     # doesn't support us telling it the encoding.
