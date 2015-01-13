@@ -48,12 +48,21 @@
             binary &mdash; {{'{:,}'.format(len(blob.raw_content))}} bytes
         </td>
     </tr>
-%   for offset, hex1, hex2, text in hexdump(blob.raw_content):
+%   lim = 256
+%   for offset, hex1, hex2, text in hexdump(blob.raw_content[:lim]):
     <tr>
         <td class="offset">{{offset}}</td>
         <td><pre>{{hex1}}</pre></td>
         <td><pre>{{hex2}}</pre></td>
         <td><pre>{{text}}</pre></td>
+    </tr>
+%   end
+%   if lim < len(blob.raw_content):
+    <tr class="etc">
+        <td></td>
+        <td>&hellip;</td>
+        <td>&hellip;</td>
+        <td>&hellip;</td>
     </tr>
 %   end
 </table>

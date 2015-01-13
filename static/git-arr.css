@@ -171,6 +171,10 @@ table.blob-binary .offset {
     border-right: 1px solid #eee;
 }
 
+table.blob-binary tr.etc {
+    text-align: center;
+}
+
 /* Pygments overrides. */
 div.linenodiv {
     padding-right: 0.5em;
