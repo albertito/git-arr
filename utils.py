@@ -98,14 +98,8 @@ def colorize_blob(fname, s):
 def markdown_blob(s):
     return markdown.markdown(s)
 
-def embed_image_blob(repo, dirname, fname):
+def embed_image_blob(fname, image_data):
     mimetype = mimetypes.guess_type(fname)[0]
-
-    # Unfortunately, bottle seems to require utf-8 encoded data.
-    # We have to refetch the blob as raw data, because the utf-8 encoded
-    # version of the blob available in the bottle template discards binary data.
-    raw_blob = repo.blob(dirname + fname)
-
     return '<img style="max-width:100%;" src="data:{0};base64,{1}" />'.format( \
-                                    mimetype, base64.b64encode(raw_blob.raw_content))
+                                    mimetype, base64.b64encode(image_data))
 
