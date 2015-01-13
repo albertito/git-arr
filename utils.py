@@ -103,3 +103,6 @@ def embed_image_blob(fname, image_data):
     return '<img style="max-width:100%;" src="data:{0};base64,{1}" />'.format( \
                                     mimetype, base64.b64encode(image_data))
 
+def is_binary(s):
+    # Git considers a blob binary if NUL in first ~8KB, so do the same.
+    return '\0' in s[:8192]

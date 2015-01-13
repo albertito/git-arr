@@ -41,6 +41,14 @@
 
 % if can_embed_image(repo, fname.unicode):
 {{!embed_image_blob(fname.raw, blob.raw_content)}}
+% elif is_binary(blob.raw_content):
+<table class="nice">
+    <tr>
+        <td>
+            binary &mdash; {{'{:,}'.format(len(blob.raw_content))}} bytes
+        </td>
+    </tr>
+</table>
 % elif can_markdown(repo, fname.unicode):
 {{!markdown_blob(blob.utf8_content)}}
 % elif can_colorize(blob.utf8_content):
