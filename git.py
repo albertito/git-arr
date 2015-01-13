@@ -84,6 +84,7 @@ class GitCommand (object):
         self._args = list(args)
         self._kwargs = {}
         self._stdin_buf = None
+        self._raw = False
         self._override = False
         for k, v in kwargs:
             self.__setattr__(k, v)
@@ -98,6 +99,12 @@ class GitCommand (object):
     def arg(self, a):
         """Adds an argument."""
         self._args.append(a)
+
+    def raw(self, b):
+        """Request raw rather than utf8-encoded command output."""
+        self._override = True
+        self._raw = b
+        self._override = False
 
     def stdin(self, s):
         """Sets the contents we will send in stdin."""
@@ -118,7 +125,7 @@ class GitCommand (object):
 
         params.extend(self._args)
 
-        return run_git(self._path, params, self._stdin_buf)
+        return run_git(self._path, params, self._stdin_buf, raw = self._raw)
 
 
 class SimpleNamespace (object):
