@@ -107,5 +107,5 @@ def embed_image_blob(repo, dirname, fname):
     raw_blob = repo.blob(dirname + fname, raw = True)
 
     return '<img style="max-width:100%;" src="data:{0};base64,{1}" />'.format( \
-                                    mimetype, base64.b64encode(raw_blob))
+                                    mimetype, base64.b64encode(raw_blob.raw_content))
 

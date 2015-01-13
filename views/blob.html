@@ -42,12 +42,12 @@
 % if can_embed_image(repo, fname.unicode):
 {{!embed_image_blob(repo, dirname.raw, fname.raw)}}
 % elif can_markdown(repo, fname.unicode):
-{{!markdown_blob(blob)}}
-% elif can_colorize(blob):
-{{!colorize_blob(fname.unicode, blob)}}
+{{!markdown_blob(blob.utf8_content)}}
+% elif can_colorize(blob.utf8_content):
+{{!colorize_blob(fname.unicode, blob.utf8_content)}}
 % else:
 <pre class="blob-body">
-{{blob}}
+{{blob.utf8_content}}
 </pre>
 % end
 
