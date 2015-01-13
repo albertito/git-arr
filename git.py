@@ -339,12 +339,12 @@ class Repo:
             ref = self.branch
         return Tree(self, ref)
 
-    def blob(self, path, ref = None, raw = False):
+    def blob(self, path, ref = None):
         """Returns a Blob instance for the given path."""
         if not ref:
             ref = self.branch
         cmd = self.cmd('cat-file')
-        cmd.raw(raw)
+        cmd.raw(True)
         cmd.batch = None
 
         if isinstance(ref, unicode):
@@ -356,7 +356,7 @@ class Repo:
         if not head or head.strip().endswith('missing'):
             return None
 
-        return Blob(out.read(), raw)
+        return Blob(out.read())
 
     def last_commit_timestamp(self):
         """Return the timestamp of the last commit."""
@@ -559,8 +559,12 @@ class Tree:
 class Blob:
     """A git blob."""
 
-    def __init__(self, content, raw):
-        if raw:
-            self.raw_content = content
-        else:
-            self.utf8_content = content
+    def __init__(self, raw_content):
+        self.raw_content = raw_content
+        self._utf8_content = None
+
+    @property
+    def utf8_content(self):
+        if not self._utf8_content:
+            self._utf8_content = self.raw_content.decode('utf8', 'replace')
+        return self._utf8_content
