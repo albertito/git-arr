@@ -345,7 +345,7 @@ class Repo:
             ref = self.branch
         cmd = self.cmd('cat-file')
         cmd.raw(True)
-        cmd.batch = None
+        cmd.batch = '%(objectsize)'
 
         if isinstance(ref, unicode):
             ref = ref.encode('utf8')
@@ -356,7 +356,7 @@ class Repo:
         if not head or head.strip().endswith('missing'):
             return None
 
-        return Blob(out.read())
+        return Blob(out.read()[:int(head)])
 
     def last_commit_timestamp(self):
         """Return the timestamp of the last commit."""
