@@ -39,7 +39,13 @@
     <a href="">{{!fname.html}}</a>
 </h3>
 
-% if can_embed_image(repo, fname.unicode):
+% if len(blob.raw_content) == 0:
+<table class="nice">
+    <tr>
+        <td>empty &mdash; 0 bytes</td>
+    </tr>
+</table>
+% elif can_embed_image(repo, fname.unicode):
 {{!embed_image_blob(fname.raw, blob.raw_content)}}
 % elif is_binary(blob.raw_content):
 <table class="nice blob-binary">
