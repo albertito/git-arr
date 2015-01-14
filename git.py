@@ -205,9 +205,8 @@ def unquote(s):
 class Repo:
     """A git repository."""
 
-    def __init__(self, path, branch = None, name = None, info = None):
+    def __init__(self, path, name = None, info = None):
         self.path = path
-        self.branch = branch
         self.name = name
         self.info = info or SimpleNamespace()
 
@@ -248,11 +247,6 @@ class Repo:
     def tag_names(self):
         """Get the names of the tags."""
         return ( name for name, _ in self.tags() )
-
-    def new_in_branch(self, branch):
-        """Returns a new Repo, but on the specific branch."""
-        return Repo(self.path, branch = branch, name = self.name,
-                    info = self.info)
 
     def commit_ids(self, ref, limit = None):
         """Generate commit ids."""
@@ -333,16 +327,12 @@ class Repo:
 
         return r
 
-    def tree(self, ref = None):
+    def tree(self, ref):
         """Returns a Tree instance for the given ref."""
-        if not ref:
-            ref = self.branch
         return Tree(self, ref)
 
-    def blob(self, path, ref = None):
+    def blob(self, path, ref):
         """Returns a Blob instance for the given path."""
-        if not ref:
-            ref = self.branch
         cmd = self.cmd('cat-file')
         cmd.raw(True)
         cmd.batch = '%(objectsize)'
