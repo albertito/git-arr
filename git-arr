@@ -231,8 +231,6 @@ def commit(repo, cid):
 @bottle.view('blob')
 @with_utils
 def blob(repo, bname, fname, dirname = ''):
-    r = repo.new_in_branch(bname)
-
     if dirname and not dirname.endswith('/'):
         dirname = dirname + '/'
 
@@ -240,11 +238,12 @@ def blob(repo, bname, fname, dirname = ''):
     fname = git.smstr.from_url(fname)
     path = dirname.raw + fname.raw
 
-    content = r.blob(path)
+    content = repo.blob(path, bname)
     if content is None:
         bottle.abort(404, "File %r not found in branch %s" % (path, bname))
 
-    return dict(repo = r, dirname = dirname, fname = fname, blob = content)
+    return dict(repo = repo, branch = bname, dirname = dirname, fname = fname,
+                blob = content)
 
 @bottle.route('/r/<repo:repo>/b/<bname:path>/t/')
 @bottle.route('/r/<repo:repo>/b/<bname:path>/t/<dirname:path>/')

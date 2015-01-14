@@ -8,10 +8,10 @@
 % else:
 %     reltree = '../' * (len(dirname.split('/')) - 1)
 % end
-% relroot = reltree + '../' * (len(repo.branch.split('/')) - 1)
+% relroot = reltree + '../' * (len(branch.split('/')) - 1)
 
 <title>git &raquo; {{repo.name}} &raquo;
-    {{repo.branch}} &raquo; {{dirname.unicode}}/{{fname.unicode}}</title>
+    {{branch}} &raquo; {{dirname.unicode}}/{{fname.unicode}}</title>
 <link rel="stylesheet" type="text/css"
     href="{{relroot}}../../../../../static/git-arr.css"/>
 <link rel="stylesheet" type="text/css"
@@ -22,12 +22,12 @@
 <body class="tree">
 <h1><a href="{{relroot}}../../../../../">git</a> &raquo;
     <a href="{{relroot}}../../../">{{repo.name}}</a> &raquo;
-    <a href="{{reltree}}../">{{repo.branch}}</a> &raquo;
+    <a href="{{reltree}}../">{{branch}}</a> &raquo;
     <a href="{{reltree}}">tree</a>
 </h1>
 
 <h3>
-    <a href="{{reltree}}">[{{repo.branch}}]</a> /
+    <a href="{{reltree}}">[{{branch}}]</a> /
 % base = smstr(reltree)
 % for c in dirname.split('/'):
 %   if not c.raw:
