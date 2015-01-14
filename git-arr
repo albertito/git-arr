@@ -263,7 +263,7 @@ def tree(repo, bname, dirname = ''):
 @bottle.view('branch')
 @with_utils
 def branch(repo, bname, offset = 0):
-    return dict(repo = repo.new_in_branch(bname), offset = offset)
+    return dict(repo = repo, branch = bname, offset = offset)
 
 @bottle.route('/static/<path:path>')
 def static(path):

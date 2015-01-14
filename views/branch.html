@@ -3,9 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 
-% relroot = '../' * (len(repo.branch.split('/')) - 1)
+% relroot = '../' * (len(branch.split('/')) - 1)
 
-<title>git &raquo; {{repo.name}} &raquo; {{repo.branch}}</title>
+<title>git &raquo; {{repo.name}} &raquo; {{branch}}</title>
 <link rel="stylesheet" type="text/css" href="{{relroot}}../../../../static/git-arr.css"/>
 <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 </head>
@@ -13,14 +13,14 @@
 <body class="branch">
 <h1><a href="{{relroot}}../../../../">git</a> &raquo;
     <a href="{{relroot}}../../">{{repo.name}}</a> &raquo;
-    <a href="./">{{repo.branch}}</a>
+    <a href="./">{{branch}}</a>
 </h1>
 
 <p>
 <a class="explicit" href="t/">Browse current source tree</a>
 </p>
 
-% commits = repo.commits("refs/heads/" + repo.branch,
+% commits = repo.commits("refs/heads/" + branch,
 %                           limit = repo.info.commits_per_page + 1,
 %                           offset = repo.info.commits_per_page * offset)
 % commits = list(commits)
