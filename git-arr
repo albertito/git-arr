@@ -256,8 +256,8 @@ def tree(repo, bname, dirname = ''):
 
     dirname = git.smstr.from_url(dirname)
 
-    r = repo.new_in_branch(bname)
-    return dict(repo = r, tree = r.tree(), dirname = dirname)
+    return dict(repo = repo, branch = bname, tree = repo.tree(bname),
+                dirname = dirname)
 
 @bottle.route('/r/<repo:repo>/b/<bname:path>/')
 @bottle.route('/r/<repo:repo>/b/<bname:path>/<offset:int>.html')
