@@ -284,7 +284,7 @@ def is_404(e):
     else:
         return e.status_code == 404
 
-def generate(output, skip_index = False):
+def generate(output, only = None):
     """Generate static html to the output directory."""
     def write_to(path, func_or_str, args = (), mtime = None):
         path = output + '/' + path
@@ -361,8 +361,8 @@ def generate(output, skip_index = False):
                             (str(r.name), str(bn), oname.raw),
                         tree, (r, bn, oname.url), mtime)
 
-    if not skip_index:
-        write_to('index.html', index())
+    # Always generate the index, to keep the "last updated" time fresh.
+    write_to('index.html', index())
 
     # We can't call static() because it relies on HTTP headers.
     read_f = lambda f: open(f).read()
@@ -373,7 +373,11 @@ def generate(output, skip_index = False):
     write_to('static/syntax.css', read_f, [static_path + '/syntax.css'],
             os.stat(static_path + '/syntax.css').st_mtime)
 
-    for r in sorted(repos.values(), key = lambda r: r.name):
+    rs = sorted(repos.values(), key = lambda r: r.name)
+    if only:
+        rs = [r for r in rs if r.name in only]
+
+    for r in rs:
         write_to('r/%s/index.html' % r.name, summary(r))
         for bn in r.branch_names():
             commit_count = 0
@@ -441,18 +445,12 @@ def main():
     if not args:
         parser.error('Must specify an action (serve|generate)')
 
-    if opts.only:
-        for rname in list(repos.keys()):
-            if rname not in opts.only:
-                del repos[rname]
-
     if args[0] == 'serve':
         bottle.run(host = 'localhost', port = 8008, reloader = True)
     elif args[0] == 'generate':
         if not opts.output:
             parser.error('Must specify --output')
-        generate(output = opts.output,
-                skip_index = len(opts.only) > 0)
+        generate(output = opts.output, only = opts.only)
     else:
         parser.error('Unknown action %s' % args[0])
 
