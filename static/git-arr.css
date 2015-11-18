@@ -69,8 +69,11 @@ table.commits td.date {
     font-style: italic;
     color: gray;
 }
-table.commits td.subject {
-    min-width: 32em;
+
+@media (min-width: 600px) {
+    table.commits td.subject {
+        min-width: 32em;
+    }
 }
 table.commits td.author {
     color: gray;
@@ -146,8 +149,10 @@ div.paginate span.inactive {
 }
 
 /* Directory listing. */
-table.ls td.name {
-    min-width: 20em;
+@media (min-width: 600px) {
+    table.ls td.name {
+        min-width: 20em;
+    }
 }
 table.ls tr.blob td.size {
     color: gray;
