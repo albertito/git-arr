@@ -97,7 +97,11 @@ def colorize_blob(fname, s):
     return highlight(s, lexer, formatter)
 
 def markdown_blob(s):
-    return markdown.markdown(s)
+    extensions = [
+        "markdown.extensions.fenced_code",
+        "markdown.extensions.tables",
+    ]
+    return markdown.markdown(s, extensions = extensions)
 
 def embed_image_blob(fname, image_data):
     mimetype = mimetypes.guess_type(fname)[0]
