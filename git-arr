@@ -50,6 +50,7 @@ def load_config(path):
         'rootdiff': 'yes',
         'desc': '',
         'recursive': 'no',
+        'prefix': '',
         'commits_in_summary': '10',
         'commits_per_page': '50',
         'max_pages': '250',
@@ -68,23 +69,27 @@ def load_config(path):
     # Do a first pass for general sanity checking and recursive expansion.
     for s in config.sections():
         if config.getboolean(s, 'recursive'):
-            for path in os.listdir(config.get(s, 'path')):
-                fullpath = find_git_dir(config.get(s, 'path') + '/' + path)
+            root = config.get(s, 'path')
+            prefix = config.get(s, 'prefix')
+
+            for path in os.listdir(root):
+                fullpath = find_git_dir(root + '/' + path)
                 if not fullpath:
                     continue
 
                 if os.path.exists(fullpath + '/disable_gitweb'):
                     continue
 
-                if config.has_section(path):
+                section = prefix + path
+                if config.has_section(section):
                     continue
 
-                config.add_section(path)
+                config.add_section(section)
                 for opt, value in config.items(s, raw = True):
-                    config.set(path, opt, value)
+                    config.set(section, opt, value)
 
-                config.set(path, 'path', fullpath)
-                config.set(path, 'recursive', 'no')
+                config.set(section, 'path', fullpath)
+                config.set(section, 'recursive', 'no')
 
             # This recursive section is no longer useful.
             config.remove_section(s)
