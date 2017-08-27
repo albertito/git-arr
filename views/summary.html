@@ -35,6 +35,11 @@
 % end
 
 % if "master" in repo.branch_names():
+<b><a href="b/master/t/">[master]</a> /</b><br/>
+%     kwargs = dict(repo = repo, tree=repo.tree("master"),
+%                   treeroot="b/master/t", dirname=smstr.from_url(""))
+%     include tree-list **kwargs
+<hr/>
 %     kwargs = dict(repo = repo, start_ref = "refs/heads/master",
 %                   limit = repo.info.commits_in_summary,
 %                   shorten = shorten, repo_root = ".", offset = 0)

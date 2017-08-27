@@ -36,22 +36,8 @@
 % end
 </h3>
 
-<table class="nice ls">
-% key_func = lambda (t, n, s): (t != 'tree', n.raw)
-% for type, name, size in sorted(tree.ls(dirname.raw), key = key_func):
-    <tr class="{{type}}">
-%   if type == "blob":
-        <td class="name"><a href="./f={{name.url}}.html">
-            {{!name.html}}</a></td>
-        <td class="size">{{size}}</td>
-%   elif type == "tree":
-        <td class="name">
-            <a class="explicit" href="./{{name.url}}/">
-                {{!name.html}}/</a></td>
-%   end
-    </tr>
-% end
-</table>
+% kwargs = dict(repo = repo, tree=tree, treeroot=".")
+% include tree-list **kwargs
 
 </body>
 </html>
