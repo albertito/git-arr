@@ -99,6 +99,11 @@ span.tag {
     background-color: #ffff88;
 }
 
+/* Projects table */
+table.projects td.name a {
+    color: #038;
+}
+
 /* Age of an object.
  * Note this is hidden by default as we rely on javascript to show it. */
 span.age {
