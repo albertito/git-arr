@@ -525,7 +525,10 @@ class Tree:
             cmd.t = None
 
         cmd.arg(self.ref)
-        cmd.arg(path)
+        if not path:
+            cmd.arg(".")
+        else:
+            cmd.arg(path)
 
         for l in cmd.run():
             _mode, otype, _oid, size, name = l.split(None, 4)
