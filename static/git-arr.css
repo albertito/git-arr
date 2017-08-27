@@ -5,12 +5,10 @@
 
 body {
     font-family: sans-serif;
-    font-size: small;
     padding: 0 1em 1em 1em;
 }
 
 h1 {
-    font-size: x-large;
     background: #ddd;
     padding: 0.3em;
 }
@@ -49,13 +47,11 @@ a.explicit:hover, a.explicit:active {
 /* Normal table, for listing things like repositories, branches, etc. */
 table.nice {
     text-align: left;
-    font-size: small;
 }
 table.nice td {
     padding: 0.15em 0.5em;
 }
 table.nice td.links {
-    font-size: smaller;
 }
 table.nice td.main {
     min-width: 10em;
@@ -108,7 +104,7 @@ span.tag {
 span.age {
     display: none;
     color: gray;
-    font-size: x-small;
+    font-size: smaller;
 }
 
 span.age-band0 {
@@ -130,7 +126,9 @@ pre.commit-message {
 }
 pre.diff-body {
     /* Note this is only used as a fallback if pygments is not available. */
-    font-size: medium;
+}
+table.changed-files {
+    font-family: monospace;
 }
 table.changed-files span.lines-added {
     color: green;
@@ -154,6 +152,10 @@ div.paginate span.inactive {
         min-width: 20em;
     }
 }
+table.ls {
+    font-family: monospace;
+    font-size: larger;
+}
 table.ls tr.blob td.size {
     color: gray;
 }
@@ -161,7 +163,6 @@ table.ls tr.blob td.size {
 /* Blob. */
 pre.blob-body {
     /* Note this is only used as a fallback if pygments is not available. */
-    font-size: medium;
 }
 
 table.blob-binary pre {
@@ -183,14 +184,14 @@ table.blob-binary tr.etc {
 /* Pygments overrides. */
 div.linenodiv {
     padding-right: 0.5em;
-    font-size: medium;
+    font-size: larger;  /* must match div.source_code */
 }
 div.linenodiv a {
     color: gray;
 }
 div.source_code {
     background: inherit;
-    font-size: medium;
+    font-size: larger;
 }
 
 /* Repository information table. */
