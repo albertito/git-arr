@@ -183,8 +183,10 @@ table.blob-binary tr.etc {
 /* Pygments overrides. */
 div.linenodiv {
     padding-right: 0.5em;
-    color: gray;
     font-size: medium;
+}
+div.linenodiv a {
+    color: gray;
 }
 div.source_code {
     background: inherit;
