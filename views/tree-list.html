@@ -1,4 +1,4 @@
-<table class="nice ls">
+<table class="nice toggable ls" id="ls">
 % key_func = lambda (t, n, s): (t != 'tree', n.raw)
 % for type, name, size in sorted(tree.ls(dirname.raw), key = key_func):
     <tr class="{{type}}">

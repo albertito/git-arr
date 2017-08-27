@@ -61,3 +61,13 @@ function replace_timestamps() {
         }
     }
 }
+
+function toggle(id) {
+    var e = document.getElementById(id);
+
+    if (e.style.display == "") {
+        e.style.display = "none"
+    } else if (e.style.display == "none") {
+        e.style.display = ""
+    }
+}

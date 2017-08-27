@@ -5,6 +5,7 @@
 <link rel="stylesheet" type="text/css" href="../../static/git-arr.css"/>
 <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 <meta name=viewport content="width=device-width, initial-scale=1">
+<script async src="../../static/git-arr.js"></script>
 </head>
 
 <body class="summary">
@@ -35,23 +36,25 @@
 % end
 
 % if "master" in repo.branch_names():
-<b><a href="b/master/t/">[master]</a> /</b><br/>
-%     kwargs = dict(repo = repo, tree=repo.tree("master"),
-%                   treeroot="b/master/t", dirname=smstr.from_url(""))
-%     include tree-list **kwargs
-<hr/>
+<div class="toggable-title" onclick="toggle('commits')">
+  <a href="b/master/">commits (master)</a>
+</div>
 %     kwargs = dict(repo = repo, start_ref = "refs/heads/master",
 %                   limit = repo.info.commits_in_summary,
 %                   shorten = shorten, repo_root = ".", offset = 0)
 %     include commit-list **kwargs
 <hr/>
+<div class="toggable-title" onclick="toggle('ls')">
+  <a href="b/master/t/">tree (master)</a>
+</div>
+%     kwargs = dict(repo = repo, tree=repo.tree("master"),
+%                   treeroot="b/master/t", dirname=smstr.from_url(""))
+%     include tree-list **kwargs
+<hr/>
 % end
 
-<table class="nice">
-    <tr>
-        <th>branches</th>
-    </tr>
-
+<div class="toggable-title" onclick="toggle('branches')">branches</div>
+<table class="nice toggable" id="branches">
     % for b in repo.branch_names():
     <tr>
         <td class="main"><a href="b/{{b}}/">{{b}}</a></td>
@@ -67,11 +70,8 @@
 
 % tags = list(repo.tags())
 % if tags:
-<table class="nice">
-    <tr>
-        <th>tags</th>
-    </tr>
-
+<div class="toggable-title" onclick="toggle('tags')">tags</div>
+<table class="nice toggable" id="tags">
     % for name, obj_id in tags:
     <tr>
         <td><a href="c/{{obj_id}}/">{{name}}</a></td>

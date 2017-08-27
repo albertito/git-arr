@@ -124,6 +124,12 @@ span.age-band2 {
     color: seagreen;
 }
 
+/* Toggable titles */
+div.toggable-title {
+    font-weight: bold;
+    margin-bottom: 0.3em;
+}
+
 /* Commit message and diff. */
 pre.commit-message {
     font-size: large;
