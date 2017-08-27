@@ -205,6 +205,10 @@ table.repo_info tr:hover {
 }
 table.repo_info td.category {
     font-weight: bold;
+    /* So we can copy-paste rows and preserve spaces, useful for the row:
+     *   git clone | url
+     */
+    white-space: pre-wrap;
 }
 table.repo_info td {
     vertical-align: top;
