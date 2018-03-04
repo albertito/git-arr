@@ -14,12 +14,14 @@ except ImportError:
 
 try:
     import markdown
+    import markdown.treeprocessors
 except ImportError:
     markdown = None
 
 import base64
 import mimetypes
 import string
+import os.path
 
 def shorten(s, width = 60):
     if len(s) < 60:
@@ -100,6 +102,7 @@ def markdown_blob(s):
     extensions = [
         "markdown.extensions.fenced_code",
         "markdown.extensions.tables",
+        RewriteLocalLinksExtension(),
     ]
     return markdown.markdown(s, extensions = extensions)
 
@@ -122,3 +125,41 @@ def hexdump(s):
         yield offset, ' '.join(hexvals[:8]), ' '.join(hexvals[8:]), text
         offset += 16
         s = s[16:]
+
+
+if markdown:
+    class RewriteLocalLinks(markdown.treeprocessors.Treeprocessor):
+        """Rewrites relative links to files, to match git-arr's links.
+
+        A link of "[example](a/file.md)" will be rewritten such that it links to
+        "a/f=file.md.html".
+
+        Note that we're already assuming a degree of sanity in the HTML, so we
+        don't re-check that the path is reasonable.
+        """
+        def run(self, root):
+            for child in root:
+                if child.tag == "a":
+                    self.rewrite_href(child)
+
+                # Continue recursively.
+                self.run(child)
+
+        def rewrite_href(self, tag):
+            """Rewrite an <a>'s href."""
+            target = tag.get("href")
+            if not target:
+                return
+            if "://" in target or target.startswith("/"):
+                return
+
+            head, tail = os.path.split(target)
+            new_target = os.path.join(head, "f=" + tail + ".html")
+            tag.set("href", new_target)
+
+
+    class RewriteLocalLinksExtension(markdown.Extension):
+        def extendMarkdown(self, md, md_globals):
+            md.treeprocessors.add(
+                    "RewriteLocalLinks", RewriteLocalLinks(), "_end")
+
