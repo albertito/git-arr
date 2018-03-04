@@ -225,3 +225,20 @@ span.ctrlchr {
     padding: 0 0.2ex 0 0.1ex;
     margin:  0 0.2ex 0 0.1ex;
 }
+
+/*
+ * Markdown overrides
+ */
+
+/* Colored links (same as explicit links above) */
+div.markdown a {
+    color: #038;
+}
+div.markdown a:hover, div.markdown a:active {
+    color: #880000;
+}
+
+/* Restrict max width for readability */
+div.markdown {
+    max-width: 55em;
+}

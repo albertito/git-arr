@@ -73,7 +73,9 @@
 %   end
 </table>
 % elif can_markdown(repo, fname.unicode):
+<div class="markdown">
 {{!markdown_blob(blob.utf8_content)}}
+</div>
 % elif can_colorize(blob.utf8_content):
 {{!colorize_blob(fname.unicode, blob.utf8_content)}}
 % else:
