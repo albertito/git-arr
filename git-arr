@@ -61,6 +61,7 @@ def load_config(path):
         'embed_markdown': 'yes',
         'embed_images': 'no',
         'ignore': '',
+        'generate_patch': 'yes',
     }
 
     config = configparser.SafeConfigParser(defaults)
@@ -120,6 +121,7 @@ def load_config(path):
             r.info.max_pages = sys.maxint
         r.info.generate_tree = config.getboolean(s, 'tree')
         r.info.root_diff = config.getboolean(s, 'rootdiff')
+        r.info.generate_patch = config.getboolean(s, 'generate_patch')
 
         r.info.web_url = config.get(s, 'web_url')
         web_url_file = fullpath + '/' + config.get(s, 'web_url_file')
@@ -233,6 +235,19 @@ def commit(repo, cid):
     c = repo.commit(cid)
     if not c:
         bottle.abort(404, 'Commit not found')
+
+    return dict(repo = repo, c=c)
+
+@bottle.route('/r/<repo:repo>/c/<cid:re:[0-9a-f]{5,40}>.patch')
+@bottle.view('patch',
+        # Output is text/plain, don't do HTML escaping.
+        template_settings={"noescape": True})
+def patch(repo, cid):
+    c = repo.commit(cid)
+    if not c:
+        bottle.abort(404, 'Commit not found')
+
+    bottle.response.content_type = 'text/plain; charset=utf8'
 
     return dict(repo = repo, c=c)
 
@@ -396,6 +411,8 @@ def generate(output, only = None):
             for cid in commit_ids:
                 write_to('r/%s/c/%s/index.html' % (r.name, cid),
                         commit, (r, cid))
+                if r.info.generate_patch:
+                    write_to('r/%s/c/%s.patch' % (r.name, cid), patch, (r, cid))
                 commit_count += 1
 
             # To avoid regenerating files that have not changed, we will
