@@ -23,10 +23,12 @@ import mimetypes
 import string
 import os.path
 
-def shorten(s, width = 60):
+
+def shorten(s, width=60):
     if len(s) < 60:
         return s
     return s[:57] + "..."
+
 
 def can_colorize(s):
     """True if we can colorize the string, False otherwise."""
@@ -41,7 +43,7 @@ def can_colorize(s):
     # If any of the first 5 lines is over 300 characters long, don't colorize.
     start = 0
     for i in range(5):
-        pos = s.find('\n', start)
+        pos = s.find("\n", start)
         if pos == -1:
             break
 
@@ -50,6 +52,7 @@ def can_colorize(s):
         start = pos + 1
 
     return True
+
 
 def can_markdown(repo, fname):
     """True if we can process file through markdown, False otherwise."""
@@ -61,42 +64,48 @@ def can_markdown(repo, fname):
 
     return fname.endswith(".md")
 
+
 def can_embed_image(repo, fname):
     """True if we can embed image file in HTML, False otherwise."""
     if not repo.info.embed_images:
         return False
 
-    return (('.' in fname) and
-            (fname.split('.')[-1].lower() in [ 'jpg', 'jpeg', 'png', 'gif' ]))
+    return ("." in fname) and (
+        fname.split(".")[-1].lower() in ["jpg", "jpeg", "png", "gif"]
+    )
+
 
 def colorize_diff(s):
-    lexer = lexers.DiffLexer(encoding = 'utf-8')
-    formatter = HtmlFormatter(encoding = 'utf-8',
-                    cssclass = 'source_code')
+    lexer = lexers.DiffLexer(encoding="utf-8")
+    formatter = HtmlFormatter(encoding="utf-8", cssclass="source_code")
 
     return highlight(s, lexer, formatter)
 
+
 def colorize_blob(fname, s):
     try:
-        lexer = lexers.guess_lexer_for_filename(fname, s, encoding = 'utf-8')
+        lexer = lexers.guess_lexer_for_filename(fname, s, encoding="utf-8")
     except lexers.ClassNotFound:
         # Only try to guess lexers if the file starts with a shebang,
         # otherwise it's likely a text file and guess_lexer() is prone to
         # make mistakes with those.
-        lexer = lexers.TextLexer(encoding = 'utf-8')
-        if s.startswith('#!'):
+        lexer = lexers.TextLexer(encoding="utf-8")
+        if s.startswith("#!"):
             try:
-                lexer = lexers.guess_lexer(s[:80], encoding = 'utf-8')
+                lexer = lexers.guess_lexer(s[:80], encoding="utf-8")
             except lexers.ClassNotFound:
                 pass
 
-    formatter = HtmlFormatter(encoding = 'utf-8',
-                    cssclass = 'source_code',
-                    linenos = 'table',
-                    anchorlinenos = True,
-                    lineanchors = 'line')
+    formatter = HtmlFormatter(
+        encoding="utf-8",
+        cssclass="source_code",
+        linenos="table",
+        anchorlinenos=True,
+        lineanchors="line",
+    )
 
     return highlight(s, lexer, formatter)
+
 
 def markdown_blob(s):
     extensions = [
@@ -104,32 +113,37 @@ def markdown_blob(s):
         "markdown.extensions.tables",
         RewriteLocalLinksExtension(),
     ]
-    return markdown.markdown(s, extensions = extensions)
+    return markdown.markdown(s, extensions=extensions)
+
 
 def embed_image_blob(fname, image_data):
     mimetype = mimetypes.guess_type(fname)[0]
     b64img = base64.b64encode(image_data).decode("ascii")
-    return '<img style="max-width:100%;" src="data:{0};base64,{1}" />'.format( \
-                                    mimetype, b64img)
+    return '<img style="max-width:100%;" src="data:{0};base64,{1}" />'.format(
+        mimetype, b64img
+    )
+
 
 def is_binary(s):
     # Git considers a blob binary if NUL in first ~8KB, so do the same.
-    return b'\0' in s[:8192]
+    return b"\0" in s[:8192]
+
 
 def hexdump(s):
-    graph = string.ascii_letters + string.digits + string.punctuation + ' '
+    graph = string.ascii_letters + string.digits + string.punctuation + " "
     s = s.decode("latin1")
     offset = 0
     while s:
         t = s[:16]
-        hexvals = ['%.2x' % ord(c) for c in t]
-        text = ''.join(c if c in graph else '.' for c in t)
-        yield offset, ' '.join(hexvals[:8]), ' '.join(hexvals[8:]), text
+        hexvals = ["%.2x" % ord(c) for c in t]
+        text = "".join(c if c in graph else "." for c in t)
+        yield offset, " ".join(hexvals[:8]), " ".join(hexvals[8:]), text
         offset += 16
         s = s[16:]
 
 
 if markdown:
+
     class RewriteLocalLinks(markdown.treeprocessors.Treeprocessor):
         """Rewrites relative links to files, to match git-arr's links.
 
@@ -139,6 +153,7 @@ if markdown:
         Note that we're already assuming a degree of sanity in the HTML, so we
         don't re-check that the path is reasonable.
         """
+
         def run(self, root):
             for child in root:
                 if child.tag == "a":
@@ -159,9 +174,8 @@ if markdown:
             new_target = os.path.join(head, "f=" + tail + ".html")
             tag.set("href", new_target)
 
-
     class RewriteLocalLinksExtension(markdown.Extension):
         def extendMarkdown(self, md, md_globals):
             md.treeprocessors.add(
-                    "RewriteLocalLinks", RewriteLocalLinks(), "_end")
-
+                "RewriteLocalLinks", RewriteLocalLinks(), "_end"
+            )
