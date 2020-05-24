@@ -10,7 +10,7 @@
 % relroot = reltree + '../' * (len(branch.split('/')) - 1)
 
 <title>git &raquo; {{repo.name}} &raquo;
-    {{branch}} &raquo; {{dirname.unicode}}{{fname.unicode}}</title>
+    {{branch}} &raquo; {{dirname.raw}}{{fname.raw}}</title>
 <link rel="stylesheet" type="text/css"
     href="{{relroot}}../../../../../static/git-arr.css"/>
 <link rel="stylesheet" type="text/css"
@@ -33,7 +33,7 @@
 %   if not c.raw:
 %     continue
 %   end
-    <a href="{{base.url}}{{c.url}}/">{{c.unicode}}</a> /
+    <a href="{{base.url}}{{c.url}}/">{{c.raw}}</a> /
 %   base += c + '/'
 % end
     <a href="">{{!fname.html}}</a>
@@ -45,7 +45,7 @@
         <td>empty &mdash; 0 bytes</td>
     </tr>
 </table>
-% elif can_embed_image(repo, fname.unicode):
+% elif can_embed_image(repo, fname.raw):
 {{!embed_image_blob(fname.raw, blob.raw_content)}}
 % elif is_binary(blob.raw_content):
 <table class="nice blob-binary">
@@ -72,12 +72,12 @@
     </tr>
 %   end
 </table>
-% elif can_markdown(repo, fname.unicode):
+% elif can_markdown(repo, fname.raw):
 <div class="markdown">
 {{!markdown_blob(blob.utf8_content)}}
 </div>
 % elif can_colorize(blob.utf8_content):
-{{!colorize_blob(fname.unicode, blob.utf8_content)}}
+{{!colorize_blob(fname.raw, blob.utf8_content)}}
 % else:
 <pre class="blob-body">
 {{blob.utf8_content}}

@@ -10,7 +10,7 @@
 % relroot = reltree + '../' * (len(branch.split('/')) - 1)
 
 <title>git &raquo; {{repo.name}} &raquo;
-    {{branch}} &raquo; {{dirname.unicode if dirname.unicode else '/'}}</title>
+    {{branch}} &raquo; {{dirname.raw if dirname.raw else '/'}}</title>
 <link rel="stylesheet" type="text/css"
     href="{{relroot}}../../../../../static/git-arr.css"/>
 <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
@@ -31,7 +31,7 @@
 %   if not c.raw:
 %     continue
 %   end
-    <a href="{{base.url}}{{c.url}}/">{{c.unicode}}</a> /
+    <a href="{{base.url}}{{c.url}}/">{{c.raw}}</a> /
 %   base += c + '/'
 % end
 </h3>

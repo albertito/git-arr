@@ -125,28 +125,15 @@ class SimpleNamespace(object):
 
 
 class smstr:
-    """A "smart" string, containing many representations for ease of use.
+    """A "smart" string, containing many representations for ease of use."""
 
-    This is a string class that contains:
-        .raw     -> raw string, authoritative source.
-        .unicode -> unicode representation, may not be perfect if .raw is not
-                    proper utf8 but should be good enough to show.
-        .url     -> escaped for safe embedding in URLs, can be not quite
-                    readable.
-        .html    -> an HTML-embeddable representation.
-    """
+    raw: str  # string, probably utf8-encoded, good enough to show.
+    url: str  # escaped for safe embedding in URLs (not human-readable).
+    html: str  # HTML-embeddable representation.
 
-    def __init__(self, raw: str):
-        if not isinstance(raw, (str, bytes)):
-            raise TypeError(
-                "The raw string must be instance of 'str', not %s" % type(raw)
-            )
-        self.raw = raw
-        if isinstance(raw, bytes):
-            self.unicode: str = raw.decode("utf8", errors="backslashreplace")
-        else:
-            self.unicode = raw
-        self.url = urllib.request.pathname2url(raw)
+    def __init__(self, s: str):
+        self.raw = s
+        self.url = urllib.request.pathname2url(s)
         self.html = self._to_html()
 
     def __cmp__(self, other):
@@ -173,7 +160,7 @@ class smstr:
     def _to_html(self):
         """Returns an html representation of the unicode string."""
         html = ""
-        for c in escape(self.unicode):
+        for c in escape(self.raw):
             if c in "\t\r\n\r\f\a\b\v\0":
                 esc_c = c.encode("unicode-escape").decode("utf8")
                 html += '<span class="ctrlchr">%s</span>' % esc_c
