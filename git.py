@@ -14,13 +14,16 @@ import email.utils
 import datetime
 import urllib.request, urllib.parse, urllib.error
 from html import escape
+from typing import Any, Dict, IO, Iterable, List, Optional, Tuple, Union
 
 
 # Path to the git binary.
 GIT_BIN = "git"
 
 
-def run_git(repo_path, params, stdin=None, silent_stderr=False, raw=False):
+def run_git(
+    repo_path: str, params, stdin: bytes = None, silent_stderr=False, raw=False
+) -> Union[IO[str], IO[bytes]]:
     """Invokes git with the given parameters.
 
     This function invokes git with the given parameters, and returns a
@@ -44,8 +47,11 @@ def run_git(repo_path, params, stdin=None, silent_stderr=False, raw=False):
             stderr=stderr,
         )
 
+        assert p.stdin is not None
         p.stdin.write(stdin)
         p.stdin.close()
+
+    assert p.stdout is not None
 
     if raw:
         return p.stdout
@@ -58,13 +64,13 @@ def run_git(repo_path, params, stdin=None, silent_stderr=False, raw=False):
 class GitCommand(object):
     """Convenient way of invoking git."""
 
-    def __init__(self, path, cmd, *args, **kwargs):
+    def __init__(self, path: str, cmd: str, *args, **kwargs):
         self._override = True
         self._path = path
         self._cmd = cmd
-        self._args = list(args)
-        self._kwargs = {}
-        self._stdin_buf = None
+        self._args: List[str] = list(args)
+        self._kwargs: Dict[str, str] = {}
+        self._stdin_buf: Optional[bytes] = None
         self._raw = False
         self._override = False
         for k, v in kwargs:
@@ -77,17 +83,17 @@ class GitCommand(object):
         k = k.replace("_", "-")
         self._kwargs[k] = v
 
-    def arg(self, a):
+    def arg(self, a: str):
         """Adds an argument."""
         self._args.append(a)
 
-    def raw(self, b):
+    def raw(self, b: bool):
         """Request raw rather than utf8-encoded command output."""
         self._override = True
         self._raw = b
         self._override = False
 
-    def stdin(self, s):
+    def stdin(self, s: Union[str, bytes]):
         """Sets the contents we will send in stdin."""
         self._override = True
         if isinstance(s, str):
@@ -130,14 +136,14 @@ class smstr:
         .html    -> an HTML-embeddable representation.
     """
 
-    def __init__(self, raw):
+    def __init__(self, raw: str):
         if not isinstance(raw, (str, bytes)):
             raise TypeError(
                 "The raw string must be instance of 'str', not %s" % type(raw)
             )
         self.raw = raw
         if isinstance(raw, bytes):
-            self.unicode = raw.decode("utf8", errors="backslashreplace")
+            self.unicode: str = raw.decode("utf8", errors="backslashreplace")
         else:
             self.unicode = raw
         self.url = urllib.request.pathname2url(raw)
@@ -177,7 +183,7 @@ class smstr:
         return html
 
 
-def unquote(s):
+def unquote(s: str):
     """Git can return quoted file names, unquote them. Always return a str."""
     if not (s[0] == '"' and s[-1] == '"'):
         # Unquoted strings are always safe, no need to mess with them
@@ -204,10 +210,10 @@ def unquote(s):
 class Repo:
     """A git repository."""
 
-    def __init__(self, path, name=None, info=None):
+    def __init__(self, path: str, name=None, info=None):
         self.path = path
         self.name = name
-        self.info = info or SimpleNamespace()
+        self.info: Any = info or SimpleNamespace()
 
     def cmd(self, cmd):
         """Returns a GitCommand() on our path."""
@@ -535,11 +541,13 @@ class Diff:
 class Tree:
     """ A git tree."""
 
-    def __init__(self, repo, ref):
+    def __init__(self, repo: Repo, ref: str):
         self.repo = repo
         self.ref = ref
 
-    def ls(self, path, recursive=False):
+    def ls(
+        self, path, recursive=False
+    ) -> Iterable[Tuple[str, smstr, Optional[int]]]:
         """Generates (type, name, size) for each file in path."""
         cmd = self.repo.cmd("ls-tree")
         cmd.long = None
@@ -575,7 +583,7 @@ class Tree:
 class Blob:
     """A git blob."""
 
-    def __init__(self, raw_content):
+    def __init__(self, raw_content: bytes):
         self.raw_content = raw_content
         self._utf8_content = None
 

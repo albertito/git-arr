@@ -5,16 +5,16 @@ These are mostly used in templates, for presentation purposes.
 """
 
 try:
-    import pygments
-    from pygments import highlight
-    from pygments import lexers
-    from pygments.formatters import HtmlFormatter
+    import pygments  # type: ignore
+    from pygments import highlight  # type: ignore
+    from pygments import lexers  # type: ignore
+    from pygments.formatters import HtmlFormatter  # type: ignore
 except ImportError:
     pygments = None
 
 try:
-    import markdown
-    import markdown.treeprocessors
+    import markdown  # type: ignore
+    import markdown.treeprocessors  # type: ignore
 except ImportError:
     markdown = None
 
@@ -23,14 +23,16 @@ import mimetypes
 import string
 import os.path
 
+import git
 
-def shorten(s, width=60):
+
+def shorten(s: str, width=60):
     if len(s) < 60:
         return s
     return s[:57] + "..."
 
 
-def can_colorize(s):
+def can_colorize(s: str):
     """True if we can colorize the string, False otherwise."""
     if pygments is None:
         return False
@@ -54,7 +56,7 @@ def can_colorize(s):
     return True
 
 
-def can_markdown(repo, fname):
+def can_markdown(repo: git.Repo, fname: str):
     """True if we can process file through markdown, False otherwise."""
     if markdown is None:
         return False
@@ -75,14 +77,14 @@ def can_embed_image(repo, fname):
     )
 
 
-def colorize_diff(s):
+def colorize_diff(s: str) -> str:
     lexer = lexers.DiffLexer(encoding="utf-8")
     formatter = HtmlFormatter(encoding="utf-8", cssclass="source_code")
 
     return highlight(s, lexer, formatter)
 
 
-def colorize_blob(fname, s):
+def colorize_blob(fname, s: str) -> str:
     try:
         lexer = lexers.guess_lexer_for_filename(fname, s, encoding="utf-8")
     except lexers.ClassNotFound:
@@ -107,7 +109,7 @@ def colorize_blob(fname, s):
     return highlight(s, lexer, formatter)
 
 
-def markdown_blob(s):
+def markdown_blob(s: str) -> str:
     extensions = [
         "markdown.extensions.fenced_code",
         "markdown.extensions.tables",
@@ -116,7 +118,7 @@ def markdown_blob(s):
     return markdown.markdown(s, extensions=extensions)
 
 
-def embed_image_blob(fname, image_data):
+def embed_image_blob(fname: str, image_data: bytes) -> str:
     mimetype = mimetypes.guess_type(fname)[0]
     b64img = base64.b64encode(image_data).decode("ascii")
     return '<img style="max-width:100%;" src="data:{0};base64,{1}" />'.format(
@@ -124,22 +126,22 @@ def embed_image_blob(fname, image_data):
     )
 
 
-def is_binary(s):
+def is_binary(b: bytes):
     # Git considers a blob binary if NUL in first ~8KB, so do the same.
-    return b"\0" in s[:8192]
+    return b"\0" in b[:8192]
 
 
-def hexdump(s):
+def hexdump(s: bytes):
     graph = string.ascii_letters + string.digits + string.punctuation + " "
-    s = s.decode("latin1")
+    b = s.decode("latin1")
     offset = 0
-    while s:
-        t = s[:16]
+    while b:
+        t = b[:16]
         hexvals = ["%.2x" % ord(c) for c in t]
         text = "".join(c if c in graph else "." for c in t)
         yield offset, " ".join(hexvals[:8]), " ".join(hexvals[8:]), text
         offset += 16
-        s = s[16:]
+        b = b[16:]
 
 
 if markdown:

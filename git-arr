@@ -9,8 +9,9 @@ import optparse
 import os
 import re
 import sys
+from typing import Union
 
-import bottle
+import bottle  # type: ignore
 
 import git
 import utils
@@ -328,10 +329,10 @@ def is_404(e):
         return e.status_code == 404
 
 
-def generate(output, only=None):
+def generate(output: str, only=None):
     """Generate static html to the output directory."""
 
-    def write_to(path, func_or_str, args=(), mtime=None):
+    def write_to(path: str, func_or_str, args=(), mtime=None):
         path = output + "/" + path
         dirname = os.path.dirname(path)
 
@@ -339,7 +340,7 @@ def generate(output, only=None):
             os.makedirs(dirname)
 
         if mtime:
-            path_mtime = 0
+            path_mtime: Union[float, int] = 0
             if os.path.exists(path):
                 path_mtime = os.stat(path).st_mtime
 
@@ -380,8 +381,8 @@ def generate(output, only=None):
         print(from_path, "->", to_path)
         os.symlink(to_path, from_path)
 
-    def write_tree(r, bn, mtime):
-        t = r.tree(bn)
+    def write_tree(r: git.Repo, bn: str, mtime):
+        t: git.Tree = r.tree(bn)
 
         write_to("r/%s/b/%s/t/index.html" % (r.name, bn), tree, (r, bn), mtime)
 
