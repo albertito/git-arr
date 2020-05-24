@@ -12,34 +12,12 @@ import subprocess
 from collections import defaultdict
 import email.utils
 import datetime
-import urllib
-from cgi import escape
+import urllib.request, urllib.parse, urllib.error
+from html import escape
 
 
 # Path to the git binary.
 GIT_BIN = "git"
-
-class EncodeWrapper:
-    """File-like wrapper that returns data utf8 encoded."""
-    def __init__(self, fd, encoding = 'utf8', errors = 'replace'):
-        self.fd = fd
-        self.encoding = encoding
-        self.errors = errors
-
-    def __iter__(self):
-        for line in self.fd:
-            yield line.decode(self.encoding, errors = self.errors)
-
-    def read(self):
-        """Returns the whole content."""
-        s = self.fd.read()
-        return s.decode(self.encoding, errors = self.errors)
-
-    def readline(self):
-        """Returns a single line."""
-        s = self.fd.readline()
-        return s.decode(self.encoding, errors = self.errors)
-
 
 def run_git(repo_path, params, stdin = None, silent_stderr = False, raw = False):
     """Invokes git with the given parameters.
@@ -66,13 +44,8 @@ def run_git(repo_path, params, stdin = None, silent_stderr = False, raw = False)
     if raw:
         return p.stdout
 
-    # We need to wrap stdout if we want to decode it as utf8, subprocess
-    # doesn't support us telling it the encoding.
-    if sys.version_info.major == 3:
-        return io.TextIOWrapper(p.stdout, encoding = 'utf8',
-                errors = 'replace')
-    else:
-        return EncodeWrapper(p.stdout)
+    return io.TextIOWrapper(p.stdout, encoding = 'utf8',
+            errors = 'backslashreplace')
 
 
 class GitCommand (object):
@@ -109,6 +82,8 @@ class GitCommand (object):
     def stdin(self, s):
         """Sets the contents we will send in stdin."""
         self._override = True
+        if isinstance(s, str):
+            s = s.encode("utf8")
         self._stdin_buf = s
         self._override = False
 
@@ -116,7 +91,7 @@ class GitCommand (object):
         """Runs the git command."""
         params = [self._cmd]
 
-        for k, v in self._kwargs.items():
+        for k, v in list(self._kwargs.items()):
             dash = '--' if len(k) > 1 else '-'
             if v is None:
                 params.append('%s%s' % (dash, k))
@@ -146,11 +121,16 @@ class smstr:
         .html    -> an HTML-embeddable representation.
     """
     def __init__(self, raw):
-        if not isinstance(raw, str):
-            raise TypeError("The raw string must be instance of 'str'")
+        if not isinstance(raw, (str, bytes)):
+            raise TypeError(
+                    "The raw string must be instance of 'str', not %s" %
+                    type(raw))
         self.raw = raw
-        self.unicode = raw.decode('utf8', errors = 'replace')
-        self.url = urllib.pathname2url(raw)
+        if isinstance(raw, bytes):
+            self.unicode = raw.decode('utf8', errors = 'backslashreplace')
+        else:
+            self.unicode = raw
+        self.url = urllib.request.pathname2url(raw)
         self.html = self._to_html()
 
     def __cmp__(self, other):
@@ -163,7 +143,7 @@ class smstr:
     @staticmethod
     def from_url(url):
         """Returns an smstr() instance from an url-encoded string."""
-        return smstr(urllib.url2pathname(url))
+        return smstr(urllib.request.url2pathname(url))
 
     def split(self, sep):
         """Like str.split()."""
@@ -176,10 +156,10 @@ class smstr:
 
     def _to_html(self):
         """Returns an html representation of the unicode string."""
-        html = u''
+        html = ''
         for c in escape(self.unicode):
             if c in '\t\r\n\r\f\a\b\v\0':
-                esc_c = c.encode('ascii').encode('string_escape')
+                esc_c = c.encode("unicode-escape").decode("utf8")
                 html += '<span class="ctrlchr">%s</span>' % esc_c
             else:
                 html += c
@@ -190,14 +170,23 @@ class smstr:
 def unquote(s):
     """Git can return quoted file names, unquote them. Always return a str."""
     if not (s[0] == '"' and s[-1] == '"'):
-        # Unquoted strings are always safe, no need to mess with them; just
-        # make sure we return str.
-        s = s.encode('ascii')
+        # Unquoted strings are always safe, no need to mess with them
         return s
 
-    # Get rid of the quotes, we never want them in the output, and convert to
-    # a raw string, un-escaping the backslashes.
-    s = s[1:-1].decode('string-escape')
+    # The string will be of the form `"<escaped>"`, where <escaped> is a
+    # backslash-escaped representation of the name of the file.
+    # Examples:  "with\ttwo\ttabs" , "\303\261aca-utf8", "\361aca-latin1"
+
+    # Get rid of the quotes, we never want them in the output.
+    s = s[1:-1]
+
+    # Un-escape the backslashes.
+    # latin1 is ok to use here because in Python it just maps the code points
+    # 0-255 to the bytes 0x-0xff, which is what we expect.
+    s = s.encode("latin1").decode("unicode-escape")
+
+    # Convert to utf8.
+    s = s.encode("latin1").decode("utf8", errors='backslashreplace')
 
     return s
 
@@ -337,13 +326,13 @@ class Repo:
         cmd.raw(True)
         cmd.batch = '%(objectsize)'
 
-        if isinstance(ref, unicode):
-            ref = ref.encode('utf8')
-        cmd.stdin('%s:%s' % (ref, path))
+        # Format: <ref>:<path>
+        # Construct it in binary since the path might not be utf8.
+        cmd.stdin(ref.encode("utf8") + b":" + path)
 
         out = cmd.run()
         head = out.readline()
-        if not head or head.strip().endswith('missing'):
+        if not head or head.strip().endswith(b'missing'):
             return None
 
         return Blob(out.read()[:int(head)])

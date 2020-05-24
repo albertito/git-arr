@@ -108,15 +108,17 @@ def markdown_blob(s):
 
 def embed_image_blob(fname, image_data):
     mimetype = mimetypes.guess_type(fname)[0]
+    b64img = base64.b64encode(image_data).decode("ascii")
     return '<img style="max-width:100%;" src="data:{0};base64,{1}" />'.format( \
-                                    mimetype, base64.b64encode(image_data))
+                                    mimetype, b64img)
 
 def is_binary(s):
     # Git considers a blob binary if NUL in first ~8KB, so do the same.
-    return '\0' in s[:8192]
+    return b'\0' in s[:8192]
 
 def hexdump(s):
     graph = string.ascii_letters + string.digits + string.punctuation + ' '
+    s = s.decode("latin1")
     offset = 0
     while s:
         t = s[:16]

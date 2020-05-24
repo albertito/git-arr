@@ -1,20 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 git-arr: A git web html generator.
 """
 
-from __future__ import print_function
-
+import configparser
 import math
 import optparse
 import os
 import re
 import sys
-
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
 
 import bottle
 
@@ -64,7 +58,7 @@ def load_config(path):
         'generate_patch': 'yes',
     }
 
-    config = configparser.SafeConfigParser(defaults)
+    config = configparser.ConfigParser(defaults)
     config.read(path)
 
     # Do a first pass for general sanity checking and recursive expansion.
@@ -118,7 +112,7 @@ def load_config(path):
         r.info.commits_per_page = config.getint(s, 'commits_per_page')
         r.info.max_pages = config.getint(s, 'max_pages')
         if r.info.max_pages <= 0:
-            r.info.max_pages = sys.maxint
+            r.info.max_pages = sys.maxsize
         r.info.generate_tree = config.getboolean(s, 'tree')
         r.info.root_diff = config.getboolean(s, 'rootdiff')
         r.info.generate_patch = config.getboolean(s, 'generate_patch')
@@ -263,6 +257,10 @@ def blob(repo, bname, fname, dirname = ''):
     fname = git.smstr.from_url(fname)
     path = dirname.raw + fname.raw
 
+    # Handle backslash-escaped characters, which are not utf8.
+    # This matches the generated links from git.unquote().
+    path = path.encode("utf8").decode("unicode-escape").encode("latin1")
+
     content = repo.blob(path, bname)
     if content is None:
         bottle.abort(404, "File %r not found in branch %s" % (path, bname))
@@ -339,7 +337,7 @@ def generate(output, only = None):
         else:
             # Otherwise, be lazy if we were given a function to run, or write
             # always if they gave us a string.
-            if isinstance(func_or_str, (str, unicode)):
+            if isinstance(func_or_str, str):
                 print(path)
                 s = func_or_str
             else:
@@ -348,7 +346,7 @@ def generate(output, only = None):
                 print(path)
                 s = func_or_str(*args)
 
-        open(path, 'w').write(s.encode('utf8', errors = 'xmlcharrefreplace'))
+        open(path, 'w').write(s)
         if mtime:
             os.utime(path, (mtime, mtime))
 
@@ -398,7 +396,7 @@ def generate(output, only = None):
     write_to('static/syntax.css', read_f, [static_path + '/syntax.css'],
             os.stat(static_path + '/syntax.css').st_mtime)
 
-    rs = sorted(repos.values(), key = lambda r: r.name)
+    rs = sorted(list(repos.values()), key = lambda r: r.name)
     if only:
         rs = [r for r in rs if r.name in only]
 
