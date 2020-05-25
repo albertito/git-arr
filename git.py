@@ -64,17 +64,15 @@ def run_git(
 class GitCommand(object):
     """Convenient way of invoking git."""
 
-    def __init__(self, path: str, cmd: str, *args, **kwargs):
+    def __init__(self, path: str, cmd: str):
         self._override = True
         self._path = path
         self._cmd = cmd
-        self._args: List[str] = list(args)
+        self._args: List[str] = []
         self._kwargs: Dict[str, str] = {}
         self._stdin_buf: Optional[bytes] = None
         self._raw = False
         self._override = False
-        for k, v in kwargs:
-            self.__setattr__(k, v)
 
     def __setattr__(self, k, v):
         if k == "_override" or self._override:
@@ -93,11 +91,9 @@ class GitCommand(object):
         self._raw = b
         self._override = False
 
-    def stdin(self, s: Union[str, bytes]):
+    def stdin(self, s: bytes):
         """Sets the contents we will send in stdin."""
         self._override = True
-        if isinstance(s, str):
-            s = s.encode("utf8")
         self._stdin_buf = s
         self._override = False
 
@@ -135,9 +131,6 @@ class smstr:
         self.raw = s
         self.url = urllib.request.pathname2url(s)
         self.html = self._to_html()
-
-    def __cmp__(self, other):
-        return cmp(self.raw, other.raw)
 
     # Note we don't define __repr__() or __str__() to prevent accidental
     # misuse. It does mean that some uses become more annoying, so it's a
@@ -235,10 +228,6 @@ class Repo:
         refs = self.for_each_ref(pattern="refs/tags/", sort=sort)
         for obj_id, _, ref in refs:
             yield ref[len("refs/tags/") :], obj_id
-
-    def tag_names(self):
-        """Get the names of the tags."""
-        return (name for name, _ in self.tags())
 
     def commit_ids(self, ref, limit=None):
         """Generate commit ids."""
