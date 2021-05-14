@@ -1,8 +1,6 @@
-
 /*
  * git-arr style sheet
  */
-
 body {
     font-family: sans-serif;
     padding: 0 1em 1em 1em;
@@ -25,20 +23,24 @@ hr {
     height: 1px;
 }
 
+
 /* By default, use implied links, more discrete for increased readability. */
 a {
     text-decoration: none;
     color: black;
 }
+
 a:hover {
     text-decoration: underline;
     color: #800;
 }
 
+
 /* Explicit links */
 a.explicit {
     color: #038;
 }
+
 a.explicit:hover, a.explicit:active {
     color: #880000;
 }
@@ -48,17 +50,22 @@ a.explicit:hover, a.explicit:active {
 table.nice {
     text-align: left;
 }
+
 table.nice td {
     padding: 0.15em 0.5em;
 }
+
 table.nice td.links {
 }
+
 table.nice td.main {
     min-width: 10em;
 }
+
 table.nice tr:hover {
     background: #eee;
 }
+
 
 /* Table for commits. */
 table.commits td.date {
@@ -71,20 +78,25 @@ table.commits td.date {
         min-width: 32em;
     }
 }
+
 table.commits td.author {
     color: gray;
 }
+
 
 /* Table for commit information. */
 table.commit-info tr:hover {
     background: inherit;
 }
+
 table.commit-info td {
     vertical-align: top;
 }
+
 table.commit-info span.date, span.email {
     color: gray;
 }
+
 
 /* Reference annotations. */
 span.refs {
@@ -92,17 +104,21 @@ span.refs {
     padding: 0px 0.25em;
     border: solid 1px gray;
 }
+
 span.head {
     background-color: #88ff88;
 }
+
 span.tag {
     background-color: #ffff88;
 }
+
 
 /* Projects table */
 table.projects td.name a {
     color: #038;
 }
+
 
 /* Age of an object.
  * Note this is hidden by default as we rely on javascript to show it. */
@@ -124,29 +140,36 @@ span.age-band2 {
     color: seagreen;
 }
 
+
 /* Toggable titles */
 div.toggable-title {
     font-weight: bold;
     margin-bottom: 0.3em;
 }
 
+
 /* Commit message and diff. */
 pre.commit-message {
     font-size: large;
     padding: 0.2em 2em;
 }
+
 pre.diff-body {
     /* Note this is only used as a fallback if pygments is not available. */
 }
+
 table.changed-files {
     font-family: monospace;
 }
+
 table.changed-files span.lines-added {
     color: green;
 }
+
 table.changed-files span.lines-deleted {
     color: red;
 }
+
 
 /* Pagination. */
 div.paginate {
@@ -157,19 +180,23 @@ div.paginate span.inactive {
     color: gray;
 }
 
+
 /* Directory listing. */
 @media (min-width: 600px) {
     table.ls td.name {
         min-width: 20em;
     }
 }
+
 table.ls {
     font-family: monospace;
     font-size: larger;
 }
+
 table.ls tr.blob td.size {
     color: gray;
 }
+
 
 /* Blob. */
 pre.blob-body {
@@ -192,30 +219,36 @@ table.blob-binary tr.etc {
     text-align: center;
 }
 
+
 /* Pygments overrides. */
 div.linenodiv {
     padding-right: 0.5em;
-    font-size: larger;  /* must match div.source_code */
+    font-size: larger;
+    /* must match div.source_code */
 }
+
 div.linenodiv a {
     color: gray;
 }
+
 div.source_code {
     background: inherit;
     font-size: larger;
 }
 
+
 /* Repository information table. */
 table.repo_info tr:hover {
     background: inherit;
 }
+
 table.repo_info td.category {
     font-weight: bold;
     /* So we can copy-paste rows and preserve spaces, useful for the row:
-     *   git clone | url
-     */
+     *   git clone | url */
     white-space: pre-wrap;
 }
+
 table.repo_info td {
     vertical-align: top;
 }
@@ -223,8 +256,9 @@ table.repo_info td {
 span.ctrlchr {
     color: gray;
     padding: 0 0.2ex 0 0.1ex;
-    margin:  0 0.2ex 0 0.1ex;
+    margin: 0 0.2ex 0 0.1ex;
 }
+
 
 /*
  * Markdown overrides
@@ -234,9 +268,11 @@ span.ctrlchr {
 div.markdown a {
     color: #038;
 }
+
 div.markdown a:hover, div.markdown a:active {
     color: #880000;
 }
+
 
 /* Restrict max width for readability */
 div.markdown {
