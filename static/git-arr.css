@@ -151,7 +151,7 @@ div.toggable-title {
 /* Commit message and diff. */
 pre.commit-message {
     font-size: large;
-    padding: 0.2em 2em;
+    padding: 0.2em 0.5em;
 }
 
 pre.diff-body {
