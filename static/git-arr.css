@@ -147,6 +147,14 @@ div.toggable-title {
     margin-bottom: 0.3em;
 }
 
+pre {
+    /* Sometimes, <pre> elements (commit messages, diffs, blobs) have very
+     * long lines. In those case, use automatic overflow, which will
+     * introduce a horizontal scroll bar for this element only (more
+     * comfortable than stretching the page, which is the default). */
+    overflow: auto;
+}
+
 
 /* Commit message and diff. */
 pre.commit-message {
