@@ -6,6 +6,7 @@ command line tool directly, so please be careful with using untrusted
 parameters.
 """
 
+import functools
 import sys
 import io
 import subprocess
@@ -199,7 +200,8 @@ class Repo:
         """Returns a GitCommand() on our path."""
         return GitCommand(self.path, cmd)
 
-    def for_each_ref(self, pattern=None, sort=None, count=None):
+    @functools.lru_cache
+    def _for_each_ref(self, pattern=None, sort=None, count=None):
         """Returns a list of references."""
         cmd = self.cmd("for-each-ref")
         if sort:
@@ -209,26 +211,25 @@ class Repo:
         if pattern:
             cmd.arg(pattern)
 
+        refs = []
         for l in cmd.run():
             obj_id, obj_type, ref = l.split()
-            yield obj_id, obj_type, ref
+            refs.append((obj_id, obj_type, ref))
+        return refs
 
-    def branches(self, sort="-authordate"):
-        """Get the (name, obj_id) of the branches."""
-        refs = self.for_each_ref(pattern="refs/heads/", sort=sort)
-        for obj_id, _, ref in refs:
-            yield ref[len("refs/heads/") :], obj_id
-
+    @functools.cache
     def branch_names(self):
         """Get the names of the branches."""
-        return (name for name, _ in self.branches())
+        refs = self._for_each_ref(pattern="refs/heads/", sort="-authordate")
+        return [ref[len("refs/heads/") :] for _, _, ref in refs]
 
+    @functools.cache
     def tags(self, sort="-taggerdate"):
         """Get the (name, obj_id) of the tags."""
-        refs = self.for_each_ref(pattern="refs/tags/", sort=sort)
-        for obj_id, _, ref in refs:
-            yield ref[len("refs/tags/") :], obj_id
+        refs = self._for_each_ref(pattern="refs/tags/", sort=sort)
+        return [(ref[len("refs/tags/") :], obj_id) for obj_id, _, ref in refs]
 
+    @functools.lru_cache
     def commit_ids(self, ref, limit=None):
         """Generate commit ids."""
         cmd = self.cmd("rev-list")
@@ -238,9 +239,9 @@ class Repo:
         cmd.arg(ref)
         cmd.arg("--")
 
-        for l in cmd.run():
-            yield l.rstrip("\n")
+        return [l.rstrip("\n") for l in cmd.run()]
 
+    @functools.lru_cache
     def commit(self, commit_id):
         """Return a single commit."""
         cs = list(self.commits(commit_id, limit=1))
@@ -248,11 +249,11 @@ class Repo:
             return None
         return cs[0]
 
-    def commits(self, ref, limit=None, offset=0):
+    @functools.lru_cache
+    def commits(self, ref, limit, offset=0):
         """Generate commit objects for the ref."""
         cmd = self.cmd("rev-list")
-        if limit:
-            cmd.max_count = limit + offset
+        cmd.max_count = limit + offset
 
         cmd.header = None
 
@@ -261,6 +262,7 @@ class Repo:
 
         info_buffer = ""
         count = 0
+        commits = []
         for l in cmd.run():
             if "\0" in l:
                 pre, post = l.split("\0", 1)
@@ -268,7 +270,7 @@ class Repo:
 
                 count += 1
                 if count > offset:
-                    yield Commit.from_str(self, info_buffer)
+                    commits.append(Commit.from_str(self, info_buffer))
 
                 # Start over.
                 info_buffer = post
@@ -278,8 +280,11 @@ class Repo:
         if info_buffer:
             count += 1
             if count > offset:
-                yield Commit.from_str(self, info_buffer)
+                commits.append(Commit.from_str(self, info_buffer))
 
+        return commits
+
+    @functools.lru_cache
     def diff(self, ref):
         """Return a Diff object for the ref."""
         cmd = self.cmd("diff-tree")
@@ -295,6 +300,7 @@ class Repo:
 
         return Diff.from_str(cmd.run())
 
+    @functools.lru_cache
     def refs(self):
         """Return a dict of obj_id -> ref."""
         cmd = self.cmd("show-ref")
@@ -308,10 +314,12 @@ class Repo:
 
         return r
 
+    @functools.lru_cache
     def tree(self, ref):
         """Returns a Tree instance for the given ref."""
         return Tree(self, ref)
 
+    @functools.lru_cache
     def blob(self, path, ref):
         """Returns a Blob instance for the given path."""
         cmd = self.cmd("cat-file")
@@ -329,9 +337,10 @@ class Repo:
 
         return Blob(out.read()[: int(head)])
 
+    @functools.cache
     def last_commit_timestamp(self):
         """Return the timestamp of the last commit."""
-        refs = self.for_each_ref(
+        refs = self._for_each_ref(
             pattern="refs/heads/", sort="-committerdate", count=1
         )
         for obj_id, _, _ in refs:
@@ -515,12 +524,13 @@ class Diff:
 
 
 class Tree:
-    """ A git tree."""
+    """A git tree."""
 
     def __init__(self, repo: Repo, ref: str):
         self.repo = repo
         self.ref = ref
 
+    @functools.lru_cache
     def ls(
         self, path, recursive=False
     ) -> Iterable[Tuple[str, smstr, Optional[int]]]:
@@ -537,6 +547,7 @@ class Tree:
         else:
             cmd.arg(path)
 
+        files = []
         for l in cmd.run():
             _mode, otype, _oid, size, name = l.split(None, 4)
             if size == "-":
@@ -553,7 +564,9 @@ class Tree:
 
             # We use a smart string for the name, as it's often tricky to
             # manipulate otherwise.
-            yield otype, smstr(name), size
+            files.append((otype, smstr(name), size))
+
+        return files
 
 
 class Blob:

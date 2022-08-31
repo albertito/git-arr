@@ -186,7 +186,7 @@ bottle.app.push(app)
 
 def with_utils(f):
     """Decorator to add the utilities to the return value.
-    
+
     Used to wrap functions that return dictionaries which are then passed to
     templates.
     """

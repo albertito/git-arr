@@ -9,6 +9,14 @@ try:
     from pygments import highlight  # type: ignore
     from pygments import lexers  # type: ignore
     from pygments.formatters import HtmlFormatter  # type: ignore
+
+    _html_formatter = HtmlFormatter(
+        encoding="utf-8",
+        cssclass="source_code",
+        linenos="table",
+        anchorlinenos=True,
+        lineanchors="line",
+    )
 except ImportError:
     pygments = None
 
@@ -19,6 +27,7 @@ except ImportError:
     markdown = None
 
 import base64
+import functools
 import mimetypes
 import string
 import os.path
@@ -32,6 +41,7 @@ def shorten(s: str, width=60):
     return s[:57] + "..."
 
 
+@functools.lru_cache
 def can_colorize(s: str):
     """True if we can colorize the string, False otherwise."""
     if pygments is None:
@@ -77,6 +87,7 @@ def can_embed_image(repo, fname):
     )
 
 
+@functools.lru_cache
 def colorize_diff(s: str) -> str:
     lexer = lexers.DiffLexer(encoding="utf-8")
     formatter = HtmlFormatter(encoding="utf-8", cssclass="source_code")
@@ -84,6 +95,7 @@ def colorize_diff(s: str) -> str:
     return highlight(s, lexer, formatter)
 
 
+@functools.lru_cache
 def colorize_blob(fname, s: str) -> str:
     try:
         lexer = lexers.guess_lexer_for_filename(fname, s, encoding="utf-8")
@@ -98,24 +110,7 @@ def colorize_blob(fname, s: str) -> str:
             except lexers.ClassNotFound:
                 pass
 
-    formatter = HtmlFormatter(
-        encoding="utf-8",
-        cssclass="source_code",
-        linenos="table",
-        anchorlinenos=True,
-        lineanchors="line",
-    )
-
-    return highlight(s, lexer, formatter)
-
-
-def markdown_blob(s: str) -> str:
-    extensions = [
-        "markdown.extensions.fenced_code",
-        "markdown.extensions.tables",
-        RewriteLocalLinksExtension(),
-    ]
-    return markdown.markdown(s, extensions=extensions)
+    return highlight(s, lexer, _html_formatter)
 
 
 def embed_image_blob(fname: str, image_data: bytes) -> str:
@@ -126,11 +121,13 @@ def embed_image_blob(fname: str, image_data: bytes) -> str:
     )
 
 
+@functools.lru_cache
 def is_binary(b: bytes):
     # Git considers a blob binary if NUL in first ~8KB, so do the same.
     return b"\0" in b[:8192]
 
 
+@functools.lru_cache
 def hexdump(s: bytes):
     graph = string.ascii_letters + string.digits + string.punctuation + " "
     b = s.decode("latin1")
@@ -181,3 +178,19 @@ if markdown:
             md.treeprocessors.register(
                 RewriteLocalLinks(), "RewriteLocalLinks", 1000
             )
+
+    _md_extensions = [
+        "markdown.extensions.fenced_code",
+        "markdown.extensions.tables",
+        RewriteLocalLinksExtension(),
+    ]
+
+    @functools.lru_cache
+    def markdown_blob(s: str) -> str:
+        return markdown.markdown(s, extensions=_md_extensions)
+
+else:
+
+    @functools.lru_cache
+    def markdown_blob(s: str) -> str:
+        raise RuntimeError("markdown_blob() called without markdown support")
