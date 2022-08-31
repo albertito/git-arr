@@ -177,7 +177,7 @@ if markdown:
             tag.set("href", new_target)
 
     class RewriteLocalLinksExtension(markdown.Extension):
-        def extendMarkdown(self, md, md_globals):
-            md.treeprocessors.add(
-                "RewriteLocalLinks", RewriteLocalLinks(), "_end"
+        def extendMarkdown(self, md):
+            md.treeprocessors.register(
+                RewriteLocalLinks(), "RewriteLocalLinks", 1000
             )
