@@ -1,13 +1,53 @@
 /*
  * git-arr style sheet
  */
+:root {
+    --body-bg: white;
+    --text-fg: black;
+    --h1-bg: #ddd;
+    --hr-bg: #e3e3e3;
+    --text-lowcontrast-fg: grey;
+    --a-fg: #800;
+    --a-explicit-fg: #038;
+    --table-hover-bg: #eee;
+    --head-bg: #88ff88;
+    --tag-bg: #ffff88;
+    --age-fg0: darkgreen;
+    --age-fg1: green;
+    --age-fg2: seagreen;
+    --diff-added-fg: green;
+    --diff-deleted-fg: red;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --body-bg: #121212;
+        --text-fg: #c9d1d9;
+        --h1-bg: #2f2f2f;
+        --hr-bg: #e3e3e3;
+        --text-lowcontrast-fg: grey;
+        --a-fg: #d4b263;
+        --a-explicit-fg: #44b4ec;
+        --table-hover-bg: #313131;
+        --head-bg: #020;
+        --tag-bg: #333000;
+        --age-fg0: #51a552;
+        --age-fg1: #468646;
+        --age-fg2: #2f722f;
+        --diff-added-fg: #00A000;
+        --diff-deleted-fg: #A00000;
+    }
+}
+
 body {
     font-family: sans-serif;
     padding: 0 1em 1em 1em;
+    color: var(--text-fg);
+    background: var(--body-bg);
 }
 
 h1 {
-    background: #ddd;
+    background: var(--h1-bg);
     padding: 0.3em;
 }
 
@@ -19,7 +59,7 @@ h2, h3 {
 
 hr {
     border: none;
-    background-color: #e3e3e3;
+    background-color: var(--hr-bg);
     height: 1px;
 }
 
@@ -27,22 +67,21 @@ hr {
 /* By default, use implied links, more discrete for increased readability. */
 a {
     text-decoration: none;
-    color: black;
+    color: var(--text-fg);
 }
 
 a:hover {
-    text-decoration: underline;
-    color: #800;
+    color: var(--a-fg);
 }
 
 
 /* Explicit links */
 a.explicit {
-    color: #038;
+    color: var(--a-explicit-fg);
 }
 
 a.explicit:hover, a.explicit:active {
-    color: #880000;
+    color: var(--a-fg);
 }
 
 
@@ -63,14 +102,14 @@ table.nice td.main {
 }
 
 table.nice tr:hover {
-    background: #eee;
+    background: var(--table-hover-bg);
 }
 
 
 /* Table for commits. */
 table.commits td.date {
     font-style: italic;
-    color: gray;
+    color: var(--text-lowcontrast-fg);
 }
 
 @media (min-width: 600px) {
@@ -80,7 +119,7 @@ table.commits td.date {
 }
 
 table.commits td.author {
-    color: gray;
+    color: var(--text-lowcontrast-fg);
 }
 
 
@@ -94,7 +133,7 @@ table.commit-info td {
 }
 
 table.commit-info span.date, span.email {
-    color: gray;
+    color: var(--text-lowcontrast-fg);
 }
 
 
@@ -102,21 +141,21 @@ table.commit-info span.date, span.email {
 span.refs {
     margin: 0px 0.5em;
     padding: 0px 0.25em;
-    border: solid 1px gray;
+    border: solid 1px var(--text-lowcontrast-fg);
 }
 
 span.head {
-    background-color: #88ff88;
+    background-color: var(--head-bg);
 }
 
 span.tag {
-    background-color: #ffff88;
+    background-color: var(--tag-bg);
 }
 
 
 /* Projects table */
 table.projects td.name a {
-    color: #038;
+    color: var(--a-explicit-fg);
 }
 
 
@@ -124,20 +163,20 @@ table.projects td.name a {
  * Note this is hidden by default as we rely on javascript to show it. */
 span.age {
     display: none;
-    color: gray;
+    color: var(--text-lowcontrast-fg);
     font-size: smaller;
 }
 
 span.age-band0 {
-    color: darkgreen;
+    color: var(--age-fg0);
 }
 
 span.age-band1 {
-    color: green;
+    color: var(--age-fg1);
 }
 
 span.age-band2 {
-    color: seagreen;
+    color: var(--age-fg2);
 }
 
 
@@ -171,11 +210,11 @@ table.changed-files {
 }
 
 table.changed-files span.lines-added {
-    color: green;
+    color: var(--diff-added-fg);
 }
 
 table.changed-files span.lines-deleted {
-    color: red;
+    color: var(--diff-deleted-fg);
 }
 
 
@@ -185,7 +224,7 @@ div.paginate {
 }
 
 div.paginate span.inactive {
-    color: gray;
+    color: var(--text-lowcontrast-fg);
 }
 
 
@@ -202,7 +241,7 @@ table.ls {
 }
 
 table.ls tr.blob td.size {
-    color: gray;
+    color: var(--text-lowcontrast-fg);
 }
 
 
@@ -219,8 +258,8 @@ table.blob-binary pre {
 table.blob-binary .offset {
     text-align: right;
     font-size: x-small;
-    color: darkgray;
-    border-right: 1px solid #eee;
+    color: var(--text-lowcontrast-fg);
+    border-right: 1px solid var(--text-lowcontrast-fg);
 }
 
 table.blob-binary tr.etc {
@@ -236,7 +275,7 @@ div.linenodiv {
 }
 
 div.linenodiv a {
-    color: gray;
+    color: var(--text-lowcontrast-fg);
 }
 
 div.source_code {
@@ -262,7 +301,7 @@ table.repo_info td {
 }
 
 span.ctrlchr {
-    color: gray;
+    color: var(--text-lowcontrast-fg);
     padding: 0 0.2ex 0 0.1ex;
     margin: 0 0.2ex 0 0.1ex;
 }
@@ -274,11 +313,11 @@ span.ctrlchr {
 
 /* Colored links (same as explicit links above) */
 div.markdown a {
-    color: #038;
+    color: var(--a-explicit-fg);
 }
 
 div.markdown a:hover, div.markdown a:active {
-    color: #880000;
+    color: var(--a-fg);
 }
 
 
