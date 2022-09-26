@@ -268,19 +268,29 @@ table.blob-binary tr.etc {
 
 
 /* Pygments overrides. */
+div.colorized-src {
+    font-size: larger;
+}
+
+div.colorized-src .source_code {
+    /* Ignore pygments style's background. */
+    background: var(--body-bg);
+}
+
+td.code > div.source_code {
+    /* This is a workaround, in pygments 2.11 there's a bug where the wrapper
+     * div is inside the table, so we need to override the descendant (because
+     * the style sets it on ".source_code" and the most specific value wins).
+     * Once we no longer support 2.11, we can remove this. */
+    background: var(--body-bg);
+}
+
 div.linenodiv {
     padding-right: 0.5em;
-    font-size: larger;
-    /* must match div.source_code */
 }
 
 div.linenodiv a {
     color: var(--text-lowcontrast-fg);
-}
-
-div.source_code {
-    background: inherit;
-    font-size: larger;
 }
 
 
