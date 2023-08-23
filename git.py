@@ -224,6 +224,17 @@ class Repo:
         return [ref[len("refs/heads/") :] for _, _, ref in refs]
 
     @functools.cache
+    def main_branch(self):
+        """Get the name of the main branch."""
+        bs = self.branch_names()
+        for branch in ["master", "main"]:
+            if branch in bs:
+                return branch
+        if bs:
+            return bs[0]
+        return None
+
+    @functools.cache
     def tags(self, sort="-taggerdate"):
         """Get the (name, obj_id) of the tags."""
         refs = self._for_each_ref(pattern="refs/tags/", sort=sort)

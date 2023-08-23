@@ -35,20 +35,22 @@
 <hr/>
 % end
 
-% if "master" in repo.branch_names():
+% if repo.main_branch():
 <div class="toggable-title" onclick="toggle('commits')">
-  <a href="b/master/">commits (master)</a>
+  <a href="b/{{repo.main_branch()}}/">commits ({{repo.main_branch()}})</a>
 </div>
-%     kwargs = dict(repo = repo, start_ref = "refs/heads/master",
+%     kwargs = dict(repo = repo,
+%                   start_ref = "refs/heads/" + repo.main_branch(),
 %                   limit = repo.info.commits_in_summary,
 %                   shorten = shorten, repo_root = ".", offset = 0)
 %     include commit-list **kwargs
 <hr/>
 <div class="toggable-title" onclick="toggle('ls')">
-  <a href="b/master/t/">tree (master)</a>
+  <a href="b/{{repo.main_branch()}}/t/">tree ({{repo.main_branch()}})</a>
 </div>
-%     kwargs = dict(repo = repo, tree=repo.tree("master"),
-%                   treeroot="b/master/t", dirname=smstr.from_url(""))
+%     kwargs = dict(repo = repo, tree=repo.tree(repo.main_branch()),
+%                   treeroot="b/" + repo.main_branch() + "/t",
+%                   dirname=smstr.from_url(""))
 %     include tree-list **kwargs
 <hr/>
 % end
