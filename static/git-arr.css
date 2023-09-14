@@ -159,6 +159,15 @@ table.projects td.name a {
 }
 
 
+/* Truncate long descriptions based on the viewport width. */
+table.projects td.desc {
+    max-width: 50vw;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+
 /* Age of an object.
  * Note this is hidden by default as we rely on javascript to show it. */
 span.age {

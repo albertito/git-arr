@@ -20,7 +20,8 @@
     % for repo in sorted(repos.values(), key = lambda r: r.name):
     <tr>
         <td class="name"><a href="r/{{repo.name}}/">{{repo.name}}</a></td>
-        <td class="desc"><a href="r/{{repo.name}}/">{{repo.info.desc}}</a></td>
+        <td class="desc"><a href="r/{{repo.name}}/" title="{{repo.info.desc}}">
+            {{repo.info.desc}}</a></td>
         <td><span class="age">{{repo.last_commit_timestamp()}}</span></td>
     </tr>
     %end
