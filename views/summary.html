@@ -39,19 +39,19 @@
 <div class="toggable-title" onclick="toggle('commits')">
   <a href="b/{{repo.main_branch()}}/">commits ({{repo.main_branch()}})</a>
 </div>
-%     kwargs = dict(repo = repo,
-%                   start_ref = "refs/heads/" + repo.main_branch(),
-%                   limit = repo.info.commits_in_summary,
-%                   shorten = shorten, repo_root = ".", offset = 0)
-%     include commit-list **kwargs
+%     include("commit-list",
+%             repo=repo,
+%             start_ref="refs/heads/" + repo.main_branch(),
+%             limit=repo.info.commits_in_summary,
+%             shorten=shorten, repo_root=".", offset=0)
 <hr/>
 <div class="toggable-title" onclick="toggle('ls')">
   <a href="b/{{repo.main_branch()}}/t/">tree ({{repo.main_branch()}})</a>
 </div>
-%     kwargs = dict(repo = repo, tree=repo.tree(repo.main_branch()),
-%                   treeroot="b/" + repo.main_branch() + "/t",
-%                   dirname=smstr.from_url(""))
-%     include tree-list **kwargs
+%     include("tree-list",
+%             repo=repo, tree=repo.tree(repo.main_branch()),
+%             treeroot="b/" + repo.main_branch() + "/t",
+%             dirname=smstr.from_url(""))
 <hr/>
 % end
 

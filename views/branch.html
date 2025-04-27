@@ -35,15 +35,14 @@
 % end
 % more = more and offset + 1 < repo.info.max_pages
 
-% include paginate more = more, offset = offset
+% include("paginate", more=more, offset=offset)
 
-% kwargs = dict(repo=repo, commits=commits,
-%               shorten=shorten, repo_root=relroot + "../..")
-% include commit-list **kwargs
+% include("commit-list", repo=repo, commits=commits, shorten=shorten,
+%                        repo_root=relroot + "../..")
 
 <p/>
 
-% include paginate more = more, offset = offset
+% include("paginate", more=more, offset=offset)
 
 </body>
 </html>
