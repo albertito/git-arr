@@ -10,6 +10,9 @@
         <td class="name">
             <a class="explicit" href="{{treeroot}}/{{name.url}}/">
                 {{!name.html}}/</a></td>
+%   elif type == "commit":
+        <td class="name">{{!name.html}}</td>
+        <td class="size">(submodule)</td>
 %   end
     </tr>
 % end
