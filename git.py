@@ -154,8 +154,6 @@ class smstr:
 
     def __init__(self, s: str):
         self.raw = s
-        self.url = urllib.request.pathname2url(s)
-        self.html = self._to_html()
 
     # Note we don't define __repr__() or __str__() to prevent accidental
     # misuse. It does mean that some uses become more annoying, so it's a
@@ -175,7 +173,12 @@ class smstr:
             other = other.raw
         return smstr(self.raw + other)
 
-    def _to_html(self):
+    @functools.cached_property
+    def url(self):
+        return urllib.request.pathname2url(self.raw)
+
+    @functools.cached_property
+    def html(self):
         """Returns an html representation of the unicode string."""
         html = ""
         for c in escape(self.raw):
