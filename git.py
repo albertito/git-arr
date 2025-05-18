@@ -9,6 +9,8 @@ parameters.
 import functools
 import sys
 import io
+import time
+import os
 import subprocess
 from collections import defaultdict
 import email.utils
@@ -29,6 +31,28 @@ def run_git(
 
     This function invokes git with the given parameters, and returns a
     file-like object with the output (from a pipe).
+    """
+    start = time.time()
+    out = _run_git(
+        repo_path, params, stdin, silent_stderr=silent_stderr, raw=raw
+    )
+    end = time.time()
+
+    if os.environ.get("GIT_ARR_DEBUG"):
+        sys.stderr.write(
+            "%.4fs  %s  %s\n"
+            % (end - start, repo_path[-30:], " ".join(params))
+        )
+
+    return out
+
+
+def _run_git(
+    repo_path: str, params, stdin: bytes = None, silent_stderr=False, raw=False
+) -> Union[IO[str], IO[bytes]]:
+    """Invokes git with the given parameters.
+
+    This is the real run_git function, which is called by run_git().
     """
     params = [GIT_BIN, "--git-dir=%s" % repo_path] + list(params)
 

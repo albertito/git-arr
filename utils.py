@@ -30,6 +30,10 @@ import base64
 import functools
 import mimetypes
 import string
+import inspect
+import sys
+import time
+import os
 import os.path
 
 import git
@@ -194,3 +198,29 @@ else:
     @functools.lru_cache
     def markdown_blob(s: str) -> str:
         raise RuntimeError("markdown_blob() called without markdown support")
+
+
+def log_timing(*log_args):
+    "Decorator to log how long a function call took."
+    if not os.environ.get("GIT_ARR_DEBUG"):
+        return lambda f: f
+
+    def log_timing_decorator(f):
+        argspec = inspect.getfullargspec(f)
+        idxs = [argspec.args.index(arg) for arg in log_args]
+
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            result = f(*args, **kwargs)
+            end = time.time()
+
+            f_args = [args[i] for i in idxs]
+            sys.stderr.write(
+                "%.4fs  %s %s\n" % (end - start, f.__name__, " ".join(f_args))
+            )
+            return result
+
+        return wrapper
+
+    return log_timing_decorator

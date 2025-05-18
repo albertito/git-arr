@@ -6,7 +6,9 @@ git-arr: A git web html generator.
 import configparser
 import math
 import optparse
+import functools
 import os
+import time
 import re
 import sys
 from typing import Union
@@ -217,6 +219,7 @@ def with_utils(f):
     return wrapped
 
 
+@utils.log_timing()
 @bottle.route("/")
 @bottle.view("index")
 @with_utils
@@ -224,6 +227,7 @@ def index():
     return dict(repos=repos)
 
 
+@utils.log_timing()
 @bottle.route("/r/<repo:repo>/")
 @bottle.view("summary")
 @with_utils
@@ -332,6 +336,7 @@ def is_404(e):
 def generate(output: str, only=None):
     """Generate static html to the output directory."""
 
+    @utils.log_timing("path")
     def write_to(path: str, func_or_str, args=(), mtime=None):
         path = output + "/" + path
         dirname = os.path.dirname(path)
