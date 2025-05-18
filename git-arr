@@ -149,12 +149,16 @@ def find_git_dir(path):
     """
 
     def check(p):
-        """A dirty check for whether this is a git dir or not."""
-        # Note silent stderr because we expect this to fail and don't want the
-        # noise; and also we strip the final \n from the output.
-        return git.run_git(
-            p, ["rev-parse", "--git-dir"], silent_stderr=True
-        ).read()[:-1]
+        "True if p is a git directory, False otherwise."
+        # This is a very crude heuristic, but works well enough for our needs,
+        # since we expect the directories to be given to us to be git repos.
+        # We used to do this by calling `git rev-parse --git-dir`, but it ends
+        # up taking a (relatively) significant amount of time, as we have to
+        # do it for all repos even if we just want to (re-)generate a single
+        # one.
+        if os.path.isdir(p + "/objects") and os.path.isdir(p + "/refs"):
+            return True
+        return False
 
     for p in [path, path + "/.git"]:
         if check(p):
