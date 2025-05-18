@@ -453,6 +453,15 @@ def generate(output: str, only=None):
 
     for r in rs:
         write_to("r/%s/index.html" % r.name, summary(r))
+
+        # It's very common that branches share the same commits. While we
+        # only write commits once (because write_to() will skip writing if the
+        # file already exists), doing that call and file existence check
+        # repeatedly takes a significant amount of time.
+        # To reduce that, we keep track of which commits we've already
+        # written, and skip writing them again.
+        commits_written = set()
+
         for bn in r.branch_names():
             commit_count = 0
             commit_ids = r.commit_ids(
@@ -460,6 +469,10 @@ def generate(output: str, only=None):
                 limit=r.info.commits_per_page * r.info.max_pages,
             )
             for cid in commit_ids:
+                if cid in commits_written:
+                    continue
+                commits_written.add(cid)
+
                 write_to(
                     "r/%s/c/%s/index.html" % (r.name, cid), commit, (r, cid)
                 )
