@@ -571,8 +571,8 @@ class Tree:
     @functools.lru_cache
     def ls(
         self, path, recursive=False
-    ) -> Iterable[Tuple[str, smstr, Optional[int]]]:
-        """Generates (type, name, size) for each file in path."""
+    ) -> Iterable[Tuple[str, smstr, str, Optional[int]]]:
+        """Generates (type, name, oid, size) for each file in path."""
         cmd = self.repo.cmd("ls-tree")
         cmd.long = None
         if recursive:
@@ -587,7 +587,7 @@ class Tree:
 
         files = []
         for l in cmd.run():
-            _mode, otype, _oid, size, name = l.split(None, 4)
+            _mode, otype, oid, size, name = l.split(None, 4)
             if size == "-":
                 size = None
             else:
@@ -602,7 +602,7 @@ class Tree:
 
             # We use a smart string for the name, as it's often tricky to
             # manipulate otherwise.
-            files.append((otype, smstr(name), size))
+            files.append((otype, smstr(name), oid, size))
 
         return files
 

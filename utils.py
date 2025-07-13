@@ -26,6 +26,7 @@ try:
 except ImportError:
     markdown = None
 
+
 import base64
 import functools
 import mimetypes
@@ -224,3 +225,31 @@ def log_timing(*log_args):
         return wrapper
 
     return log_timing_decorator
+
+
+try:
+    import xattr
+
+    def set_xattr_oid(path: str, oid: str):
+        """Set the xattr 'user.git-arr.oid' on the given path."""
+        try:
+            xattr.setxattr(path, "user.git-arr.oid", oid.encode("utf-8"))
+        except OSError as e:
+            print(f"{path}: error writing xattr: {e}")
+
+    def get_xattr_oid(path: str) -> str:
+        """Get the xattr 'user.git-arr.oid' from the given path."""
+        try:
+            return xattr.getxattr(path, "user.git-arr.oid").decode("utf-8")
+        except OSError as e:
+            return ""
+
+except ImportError:
+
+    def set_xattr_oid(path: str, oid: str):
+        """Set the xattr 'user.git-arr.oid' on the given path."""
+        pass
+
+    def get_xattr_oid(path: str) -> str:
+        """Get the xattr 'user.git-arr.oid' from the given path."""
+        return ""

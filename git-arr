@@ -341,8 +341,16 @@ def generate(output: str, only=None):
     """Generate static html to the output directory."""
 
     @utils.log_timing("path")
-    def write_to(path: str, func_or_str, args=(), mtime=None):
+    def write_to(path: str, func_or_str, args=(), mtime=None, oid=""):
         path = output + "/" + path
+
+        if oid:
+            # If we were given an oid, try to use xattrs to check if the file
+            # we wrote is still the same, in which case we can skip writing
+            # it again.
+            path_oid = utils.get_xattr_oid(path)
+            if path_oid and path_oid == oid:
+                return
 
         if mtime:
             path_mtime: Union[float, int] = 0
@@ -381,6 +389,8 @@ def generate(output: str, only=None):
         open(path, "w").write(s)
         if mtime:
             os.utime(path, (mtime, mtime))
+        if oid:
+            utils.set_xattr_oid(path, oid)
 
     def link(from_path, to_path):
         from_path = output + "/" + from_path
@@ -395,7 +405,7 @@ def generate(output: str, only=None):
 
         write_to("r/%s/b/%s/t/index.html" % (r.name, bn), tree, (r, bn), mtime)
 
-        for otype, oname, _ in t.ls("", recursive=True):
+        for otype, oname, oid, _ in t.ls("", recursive=True):
             # FIXME: bottle cannot route paths with '\n' so those are sadly
             # expected to fail for now; we skip them.
             if "\n" in oname.raw:
@@ -417,6 +427,7 @@ def generate(output: str, only=None):
                     blob,
                     (r, bn, fname.url, dirname.url),
                     mtime,
+                    oid,
                 )
             else:
                 write_to(
@@ -425,6 +436,7 @@ def generate(output: str, only=None):
                     tree,
                     (r, bn, oname.url),
                     mtime,
+                    oid,
                 )
 
     # Always generate the index, to keep the "last updated" time fresh.

@@ -1,6 +1,6 @@
 <table class="nice toggable ls" id="ls">
 % key_func = lambda x: (x[0] != 'tree', x[1].raw)
-% for type, name, size in sorted(tree.ls(dirname.raw), key = key_func):
+% for type, name, oid, size in sorted(tree.ls(dirname.raw), key = key_func):
     <tr class="{{type}}">
 %   if type == "blob":
         <td class="name"><a href="{{treeroot}}/f={{name.url}}.html">
