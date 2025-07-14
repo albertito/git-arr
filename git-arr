@@ -473,6 +473,7 @@ def generate(output: str, only=None):
                 limit=r.info.commits_per_page * r.info.max_pages,
             )
             for cid in commit_ids:
+                commit_count += 1
                 if cid in commits_written:
                     continue
                 commits_written.add(cid)
@@ -484,7 +485,6 @@ def generate(output: str, only=None):
                     write_to(
                         "r/%s/c/%s.patch" % (r.name, cid), patch, (r, cid)
                     )
-                commit_count += 1
 
             # To avoid regenerating files that have not changed, we will
             # instruct write_to() to set their mtime to the branch's committer
