@@ -1,3 +1,7 @@
 [tool.black]
 line-length = 79
 include = "(git-arr|git.py|utils.py)$"
+
+[[tool.mypy.overrides]]
+module = ["xattr.*"]
+follow_untyped_imports = true

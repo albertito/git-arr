@@ -4,29 +4,8 @@ Miscellaneous utilities.
 These are mostly used in templates, for presentation purposes.
 """
 
-try:
-    import pygments  # type: ignore
-    from pygments import highlight  # type: ignore
-    from pygments import lexers  # type: ignore
-    from pygments.formatters import HtmlFormatter  # type: ignore
-
-    _html_formatter = HtmlFormatter(
-        encoding="utf-8",
-        cssclass="source_code",
-        linenos="table",
-        anchorlinenos=True,
-        lineanchors="line",
-    )
-except ImportError:
-    pygments = None
-
-try:
-    import markdown  # type: ignore
-    import markdown.treeprocessors  # type: ignore
-except ImportError:
-    markdown = None
-
-
+from typing import Sequence
+from types import ModuleType
 import base64
 import functools
 import mimetypes
@@ -40,113 +19,98 @@ import os.path
 import git
 
 
-def shorten(s: str, width=60):
-    if len(s) < 60:
-        return s
-    return s[:57] + "..."
+try:
+    import pygments
+    from pygments import highlight
+    from pygments import lexers
+    from pygments.formatters import HtmlFormatter
 
+    _html_formatter = HtmlFormatter(
+        encoding="utf-8",
+        cssclass="source_code",
+        linenos="table",
+        anchorlinenos=True,
+        lineanchors="line",
+    )
 
-@functools.lru_cache
-def can_colorize(s: str):
-    """True if we can colorize the string, False otherwise."""
-    if pygments is None:
-        return False
-
-    # Pygments can take a huge amount of time with long files, or with very
-    # long lines; these are heuristics to try to avoid those situations.
-    if len(s) > (512 * 1024):
-        return False
-
-    # If any of the first 5 lines is over 300 characters long, don't colorize.
-    start = 0
-    for i in range(5):
-        pos = s.find("\n", start)
-        if pos == -1:
-            break
-
-        if pos - start > 300:
+    @functools.lru_cache
+    def can_colorize(s: str) -> bool:
+        """True if we can colorize the string, False otherwise."""
+        # Pygments can take a huge amount of time with long files, or with
+        # very long lines; these are heuristics to try to avoid those
+        # situations.
+        if len(s) > (512 * 1024):
             return False
-        start = pos + 1
 
-    return True
+        # If any of the first 5 lines is over 300 characters long, don't
+        # colorize.
+        start = 0
+        for i in range(5):
+            pos = s.find("\n", start)
+            if pos == -1:
+                break
 
+            if pos - start > 300:
+                return False
+            start = pos + 1
 
-def can_markdown(repo: git.Repo, fname: str):
-    """True if we can process file through markdown, False otherwise."""
-    if markdown is None:
+        return True
+
+    @functools.lru_cache
+    def colorize_diff(s: str) -> str:
+        lexer = lexers.DiffLexer(encoding="utf-8")
+        formatter = HtmlFormatter(encoding="utf-8", cssclass="source_code")
+
+        return highlight(s, lexer, formatter)
+
+    @functools.lru_cache
+    def colorize_blob(fname, s: str) -> str:
+        # Explicit import to enable type checking, otherwise mypy gets confused
+        # because pygments is defined as a generic module | None.
+        import pygments.lexer
+
+        lexer: pygments.lexer.Lexer | pygments.lexer.LexerMeta
+        try:
+            lexer = lexers.guess_lexer_for_filename(fname, s, encoding="utf-8")
+        except lexers.ClassNotFound:
+            # Only try to guess lexers if the file starts with a shebang,
+            # otherwise it's likely a text file and guess_lexer() is prone to
+            # make mistakes with those.
+            if s.startswith("#!"):
+                try:
+                    lexer = lexers.guess_lexer(s[:80], encoding="utf-8")
+                except lexers.ClassNotFound:
+                    pass
+            else:
+                lexer = lexers.TextLexer(encoding="utf-8")
+
+        return highlight(s, lexer, _html_formatter)
+
+except ImportError:
+
+    @functools.lru_cache
+    def can_colorize(s: str) -> bool:
+        """True if we can colorize the string, False otherwise."""
         return False
 
-    if not repo.info.embed_markdown:
-        return False
+    @functools.lru_cache
+    def colorize_diff(s: str) -> str:
+        raise RuntimeError("colorize_diff() called without pygments support")
 
-    return fname.endswith(".md")
-
-
-def can_embed_image(repo, fname):
-    """True if we can embed image file in HTML, False otherwise."""
-    if not repo.info.embed_images:
-        return False
-
-    return ("." in fname) and (
-        fname.split(".")[-1].lower() in ["jpg", "jpeg", "png", "gif"]
-    )
+    @functools.lru_cache
+    def colorize_blob(fname, s: str) -> str:
+        raise RuntimeError("colorize_blob() called without pygments support")
 
 
-@functools.lru_cache
-def colorize_diff(s: str) -> str:
-    lexer = lexers.DiffLexer(encoding="utf-8")
-    formatter = HtmlFormatter(encoding="utf-8", cssclass="source_code")
+try:
+    import markdown
 
-    return highlight(s, lexer, formatter)
+    def can_markdown(repo: git.Repo, fname: str) -> bool:
+        """True if we can process file through markdown, False otherwise."""
+        if not repo.info.embed_markdown:
+            return False
 
-
-@functools.lru_cache
-def colorize_blob(fname, s: str) -> str:
-    try:
-        lexer = lexers.guess_lexer_for_filename(fname, s, encoding="utf-8")
-    except lexers.ClassNotFound:
-        # Only try to guess lexers if the file starts with a shebang,
-        # otherwise it's likely a text file and guess_lexer() is prone to
-        # make mistakes with those.
-        lexer = lexers.TextLexer(encoding="utf-8")
-        if s.startswith("#!"):
-            try:
-                lexer = lexers.guess_lexer(s[:80], encoding="utf-8")
-            except lexers.ClassNotFound:
-                pass
-
-    return highlight(s, lexer, _html_formatter)
-
-
-def embed_image_blob(fname: str, image_data: bytes) -> str:
-    mimetype = mimetypes.guess_type(fname)[0]
-    b64img = base64.b64encode(image_data).decode("ascii")
-    return '<img style="max-width:100%;" src="data:{0};base64,{1}" />'.format(
-        mimetype, b64img
-    )
-
-
-@functools.lru_cache
-def is_binary(b: bytes):
-    # Git considers a blob binary if NUL in first ~8KB, so do the same.
-    return b"\0" in b[:8192]
-
-
-@functools.lru_cache
-def hexdump(s: bytes):
-    graph = string.ascii_letters + string.digits + string.punctuation + " "
-    b = s.decode("latin1")
-    offset = 0
-    while b:
-        t = b[:16]
-        hexvals = ["%.2x" % ord(c) for c in t]
-        text = "".join(c if c in graph else "." for c in t)
-        yield offset, " ".join(hexvals[:8]), " ".join(hexvals[8:]), text
-        offset += 16
-        b = b[16:]
-
-
-if markdown:
+        return fname.endswith(".md")
 
     class RewriteLocalLinks(markdown.treeprocessors.Treeprocessor):
         """Rewrites relative links to files, to match git-arr's links.
@@ -184,7 +148,7 @@ if markdown:
                 RewriteLocalLinks(), "RewriteLocalLinks", 1000
             )
 
-    _md_extensions = [
+    _md_extensions: Sequence[str | markdown.Extension] = [
         "markdown.extensions.fenced_code",
         "markdown.extensions.tables",
         RewriteLocalLinksExtension(),
@@ -194,11 +158,59 @@ if markdown:
     def markdown_blob(s: str) -> str:
         return markdown.markdown(s, extensions=_md_extensions)
 
-else:
+except ImportError:
+
+    def can_markdown(repo: git.Repo, fname: str) -> bool:
+        """True if we can process file through markdown, False otherwise."""
+        return False
 
     @functools.lru_cache
     def markdown_blob(s: str) -> str:
         raise RuntimeError("markdown_blob() called without markdown support")
+
+
+def shorten(s: str, width=60):
+    if len(s) < 60:
+        return s
+    return s[:57] + "..."
+
+
+def can_embed_image(repo: git.Repo, fname: str) -> bool:
+    """True if we can embed image file in HTML, False otherwise."""
+    if not repo.info.embed_images:
+        return False
+
+    return ("." in fname) and (
+        fname.split(".")[-1].lower() in ["jpg", "jpeg", "png", "gif"]
+    )
+
+
+def embed_image_blob(fname: str, image_data: bytes) -> str:
+    mimetype = mimetypes.guess_type(fname)[0]
+    b64img = base64.b64encode(image_data).decode("ascii")
+    return '<img style="max-width:100%;" src="data:{0};base64,{1}" />'.format(
+        mimetype, b64img
+    )
+
+
+@functools.lru_cache
+def is_binary(b: bytes):
+    # Git considers a blob binary if NUL in first ~8KB, so do the same.
+    return b"\0" in b[:8192]
+
+
+@functools.lru_cache
+def hexdump(s: bytes):
+    graph = string.ascii_letters + string.digits + string.punctuation + " "
+    b = s.decode("latin1")
+    offset = 0
+    while b:
+        t = b[:16]
+        hexvals = ["%.2x" % ord(c) for c in t]
+        text = "".join(c if c in graph else "." for c in t)
+        yield offset, " ".join(hexvals[:8]), " ".join(hexvals[8:]), text
+        offset += 16
+        b = b[16:]
 
 
 def log_timing(*log_args):

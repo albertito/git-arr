@@ -17,7 +17,7 @@ import email.utils
 import datetime
 import urllib.request, urllib.parse, urllib.error
 from html import escape
-from typing import Any, Dict, IO, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, IO, Iterable, List, Tuple, Union
 
 
 # Path to the git binary.
@@ -25,7 +25,11 @@ GIT_BIN = "git"
 
 
 def run_git(
-    repo_path: str, params, stdin: bytes = None, silent_stderr=False, raw=False
+    repo_path: str,
+    params,
+    stdin: bytes | None = None,
+    silent_stderr=False,
+    raw=False,
 ) -> Union[IO[str], IO[bytes]]:
     """Invokes git with the given parameters.
 
@@ -48,7 +52,11 @@ def run_git(
 
 
 def _run_git(
-    repo_path: str, params, stdin: bytes = None, silent_stderr=False, raw=False
+    repo_path: str,
+    params,
+    stdin: bytes | None = None,
+    silent_stderr=False,
+    raw=False,
 ) -> Union[IO[str], IO[bytes]]:
     """Invokes git with the given parameters.
 
@@ -95,7 +103,7 @@ class GitCommand(object):
         self._cmd = cmd
         self._args: List[str] = []
         self._kwargs: Dict[str, str] = {}
-        self._stdin_buf: Optional[bytes] = None
+        self._stdin_buf: bytes | None = None
         self._raw = False
         self._override = False
 
@@ -149,8 +157,6 @@ class smstr:
     """A "smart" string, containing many representations for ease of use."""
 
     raw: str  # string, probably utf8-encoded, good enough to show.
-    url: str  # escaped for safe embedding in URLs (not human-readable).
-    html: str  # HTML-embeddable representation.
 
     def __init__(self, s: str):
         self.raw = s
@@ -174,11 +180,12 @@ class smstr:
         return smstr(self.raw + other)
 
     @functools.cached_property
-    def url(self):
+    def url(self) -> str:
+        """Escaped for safe embedding in URLs (not human-readable)."""
         return urllib.request.pathname2url(self.raw)
 
     @functools.cached_property
-    def html(self):
+    def html(self) -> str:
         """Returns an html representation of the unicode string."""
         html = ""
         for c in escape(self.raw):
@@ -571,7 +578,7 @@ class Tree:
     @functools.lru_cache
     def ls(
         self, path, recursive=False
-    ) -> Iterable[Tuple[str, smstr, str, Optional[int]]]:
+    ) -> Iterable[Tuple[str, smstr, str, int | None]]:
         """Generates (type, name, oid, size) for each file in path."""
         cmd = self.repo.cmd("ls-tree")
         cmd.long = None
