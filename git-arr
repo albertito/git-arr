@@ -573,6 +573,8 @@ def main():
         parser.error("Must specify an action (serve|generate)")
 
     if args[0] == "serve":
+        if os.environ.get("GIT_ARR_DEBUG"):
+            bottle.debug(True)
         bottle.run(host="localhost", port=8008, reloader=True)
     elif args[0] == "generate":
         if not opts.output:
