@@ -8,7 +8,7 @@
 <script async src="static/git-arr.js"></script>
 </head>
 
-<body class="index" onload="replace_timestamps()">
+<body class="index" onload="load_timestamps()">
 <h1>git</h1>
 
 <table class="nice projects">
@@ -22,7 +22,7 @@
         <td class="name"><a href="r/{{repo.name}}/">{{repo.name}}</a></td>
         <td class="desc"><a href="r/{{repo.name}}/" title="{{repo.info.desc}}">
             {{repo.info.desc}}</a></td>
-        <td><span class="age">{{repo.last_commit_timestamp()}}</span></td>
+        <td><span id="age:{{repo.name}}" class="age"></span></td>
     </tr>
     %end
 </table>

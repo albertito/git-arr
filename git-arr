@@ -7,6 +7,7 @@ import configparser
 import math
 import optparse
 import functools
+import json
 import os
 import time
 import re
@@ -232,6 +233,17 @@ def index():
 
 
 @utils.log_timing()
+@bottle.route("/modified_ts.json")
+def modified_ts(only=None):
+    ts = {}
+    for r in repos.values():
+        if only and r.name not in only:
+            continue
+        ts[r.name] = r.last_commit_timestamp()
+    return dict(ts)
+
+
+@utils.log_timing()
 @bottle.route("/r/<repo:repo>/")
 @bottle.view("summary")
 @with_utils
@@ -439,8 +451,26 @@ def generate(output: str, only=None):
                     oid,
                 )
 
-    # Always generate the index, to keep the "last updated" time fresh.
-    write_to("index.html", index())
+    @utils.log_timing()
+    def update_modified_ts_json(last_commit_timestamp):
+        """Update /modified_ts.json with the given last timestamps."""
+        # Note that the original file may have more repositories than our new
+        # dict, if --only was used. The point of updating it instead of doing
+        # a full regeneration is that it is much faster when --only is used.
+        path = output + "/modified_ts.json"
+        print(path)
+        if only and os.path.exists(path):
+            ts = json.load(open(path))
+        else:
+            ts = {}
+        ts.update(last_commit_timestamp)
+        s = json.dumps(ts, indent=4, sort_keys=True)
+        open(path, "w").write(s)
+
+    # Don't generate the top level index if we are generating a single
+    # repository.
+    if not only:
+        write_to("index.html", index())
 
     # We can't call static() because it relies on HTTP headers.
     read_f = lambda f: open(f).read()
@@ -467,6 +497,12 @@ def generate(output: str, only=None):
     if only:
         rs = [r for r in rs if r.name in only]
 
+    # We will keep track of the last commit timestamp for each repository,
+    # so we can write it to the top level index.
+    # This is an optimization, because computing the last commit timestamp
+    # for a repository when we are not generating it is expensive.
+    last_commit_timestamp = {}
+
     for r in rs:
         write_to("r/%s/index.html" % r.name, summary(r))
 
@@ -478,6 +514,7 @@ def generate(output: str, only=None):
         # written, and skip writing them again.
         commits_written = set()
 
+        last_commit_timestamp[r.name] = -1
         for bn in r.branch_names():
             commit_count = 0
             commit_ids = r.commit_ids(
@@ -503,6 +540,8 @@ def generate(output: str, only=None):
             # date, and then compare against it to decide whether or not to
             # write.
             branch_mtime = r.commit(bn).committer_date.epoch
+            if branch_mtime > last_commit_timestamp[r.name]:
+                last_commit_timestamp[r.name] = branch_mtime
 
             nr_pages = int(
                 math.ceil(float(commit_count) / r.info.commits_per_page)
@@ -540,6 +579,8 @@ def generate(output: str, only=None):
                     print("404 in tag %s (%s)" % (tag_name, obj_id))
                 else:
                     raise
+
+    update_modified_ts_json(last_commit_timestamp)
 
 
 def main():

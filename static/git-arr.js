@@ -39,14 +39,24 @@ function how_long_ago(timestamp) {
     return "about now";
 }
 
-/* Go through the document and replace the contents of the span.age elements
- * with a human-friendly variant, and then show them. */
-function replace_timestamps() {
-    var elements = document.getElementsByClassName("age");
-    for (var i = 0; i < elements.length; i++) {
-        var e = elements[i];
+/* Load the timestamps from the modified_ts.json file, and then
+ * insert the human-friendly representation into the corresponding span.age
+ * elements. */
+async function load_timestamps() {
+    const response = await fetch("modified_ts.json");
+    if (!response.ok) {
+        throw new Error(`fetch error, status: ${response.status}`);
+    }
 
-        var timestamp = e.innerHTML;
+    const json = await response.json();
+    console.log("Loaded timestamps:", json);
+
+    for (const [repo_name, timestamp] of Object.entries(json)) {
+        const e = document.getElementById("age:"+repo_name);
+        if (!e) {
+            console.warn(`No element found for repo: ${repo_name}`);
+            continue;
+        }
         e.innerHTML = how_long_ago(timestamp);
         e.style.display = "inline";
 
