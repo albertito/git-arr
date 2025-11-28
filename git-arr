@@ -366,8 +366,10 @@ def generate(output: str, only=None):
 
         if mtime:
             path_mtime: Union[float, int] = 0
-            if os.path.exists(path):
+            try:
                 path_mtime = os.stat(path).st_mtime
+            except FileNotFoundError:
+                pass
 
             # Make sure they're both float or int, to avoid failing
             # comparisons later on because of this.
@@ -395,8 +397,8 @@ def generate(output: str, only=None):
                 s = func_or_str(*args)
 
         dirname = os.path.dirname(path)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
+        if dirname:
+            os.makedirs(dirname, exist_ok=True)
 
         open(path, "w").write(s)
         if mtime:
